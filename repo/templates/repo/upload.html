@@ -1,12 +1,44 @@
 {% extends "repo/base.html" %}
 
 {% block main %}
-    <form method="POST" enctype="multipart/form-data">
+    <form method="POST" enctype="multipart/form-data" id="form">
         {% csrf_token %}
         <div class="form-group">
             <label for="exampleFormControlFile1">Example file input</label>
+            <input type="hidden" id="filename" name="filename">
             <input type="file" class="form-control-file" id="exampleFormControlFile1" name="file">
         </div>
-        <button type="submit" class="btn btn-primary">Upload</button>
+        <button type="button" class="btn btn-primary" id="button">Upload</button>
     </form>
+
+    <script>
+        function randomString(length) {
+            var result = '';
+            var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            var charactersLength = characters.length;
+            for (var i = 0; i < length; i++) {
+                result += characters.charAt(Math.floor(Math.random() * charactersLength));
+            }
+            return result;
+        }
+
+        document.getElementById("button").onclick = () => {
+
+            var ext = document.getElementById("exampleFormControlFile1").value.split(".")[1];
+            var filename = randomString(30)
+            document.getElementById("filename").setAttribute("value", filename + "." + ext);
+
+            fetch("https://github-clone-cdn.glitch.me/uploader", {
+                method: "POST",
+                headers: {
+                    'enctype': 'multipart/form-data'
+                },
+                mode: 'no-cors',
+                body: new FormData(document.getElementById("form"))
+            })
+
+            fetch(`${window.location.href}?url=https://github-clone-cdn.glitch.me/uploads/${filename}.${ext}&filename=${JSON.stringify(document.getElementById("exampleFormControlFile1").value).split("\\")[4].split("\"")[0]}`);
+
+        }
+    </script>
 {% endblock %}

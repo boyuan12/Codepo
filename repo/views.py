@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from django.http import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
@@ -11,12 +11,8 @@ import requests
 
 from GitHubClone.settings import DEBUG
 
+from termcolor import colored
 BASE_URL = "https://github-clone-dj.herokuapp.com"
-
-def handle_uploaded_file(f):
-    with open('repo/static/repo/'+f.name, 'wb+') as destination:
-        for chunk in f.chunks():
-            destination.write(chunk)
 
 
 # Create your views here.
@@ -40,6 +36,8 @@ def repo(request, username, repo, url="/"):
     directory_id = Directory.objects.get(repo_id=r.id, name=url).id
     files = File.objects.filter(directory_id=directory_id)
 
+    print(files)
+
     if url == "upload/":
         return render(request, "repo/upload.html")
 
@@ -51,13 +49,16 @@ def repo(request, username, repo, url="/"):
 
 @login_required(login_url='/auth/login/')
 def upload(request, username, repo, url="/"):
-    if request.method == "POST":
-        handle_uploaded_file(request.FILES["file"])
-        r = Repository(user_id=request.user.id, name=repo).id
-        d = Directory(repo_id=r, name=url).id
-        if DEBUG == False:
-            url = requests.get(f"https://github-clone-cdn.glitch.me/scrape?url={BASE_URL}/static/repo/{request.FILES['file'].name}").json()
-            f = File(repo_id=r, filename=request.FILES["file"].name, directory_id=d, url=url["url"])
-        return render(request, "repo/uploaded.html")
-    else:
+    try:
+        request.GET["url"]
+    except Exception as e:
+        print(e)
         return render(request, "repo/upload.html")
+    print(colored(request.user.id, "yellow"))
+    r = Repository.objects.get(user_id=request.user.id, name=repo).id
+    print(r)
+    d = Directory.objects.get(repo_id=r, name=url).id
+    print(d)
+    f = File(repo_id=r, filename=request.GET["filename"], directory_id=d, url=request.GET["url"])
+    f.save()
+    return render(request, "repo/uploaded.html")

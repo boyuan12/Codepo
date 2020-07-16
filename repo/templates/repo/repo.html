@@ -10,7 +10,7 @@
         </nav>
         <button type="button" class="btn btn-light" onclick="window.location.replace('upload/')">Add File</button>
         {% for f in files %}
-            <div>{{ f.name }}</div>
+            <div><a href="{{ f.url }}">{{ f.filename }}</a></div>
         {% endfor %}
     </div>
 {% endblock %}
