@@ -1,2 +1,4 @@
 Django
 requests
+django-heroku
+gunicorn
