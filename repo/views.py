@@ -56,7 +56,7 @@ def upload(request, username, repo, url="/"):
         r = Repository(user_id=request.user.id, name=repo).id
         d = Directory(repo_id=r, name=url).id
         if DEBUG == False:
-            url = request.get(f"https://github-clone-cdn.glitch.me/scrape?url={BASE_URL}/static/repo/{request.FILES['file'].name}").json()
+            url = requests.get(f"https://github-clone-cdn.glitch.me/scrape?url={BASE_URL}/static/repo/{request.FILES['file'].name}").json()
             f = File(repo_id=r, filename=request.FILES["file"].name, directory_id=d, url=url["url"])
         return render(request, "repo/uploaded.html")
     else:
