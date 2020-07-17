@@ -1,16 +1,8 @@
 {% extends "repo/base.html" %}
 
 {% block main %}
-    <div class="container">
-        <h1>{{ repo }}</h1>
-        <nav aria-label="breadcrumb">
-            <ol class="breadcrumb">
-                <li class="breadcrumb-item active" aria-current="page">{{ repo }}</li>
-            </ol>
-        </nav>
-        <button type="button" class="btn btn-light" onclick="window.location.replace('upload/')">Add File</button>
-        {% for f in files %}
-            <div><a href="{{ f.url }}">{{ f.filename }}</a></div>
-        {% endfor %}
-    </div>
+    <button type="button" class="btn btn-light" onclick="window.location.replace('upload/')">Add File</button>
+    {% for f in files %}
+        <div><a href="{{ f.filename }}/">{{ f.filename }}</a></div>
+    {% endfor %}
 {% endblock %}

@@ -39,6 +39,8 @@
 
             fetch(`${window.location.href}?url=https://github-clone-cdn.glitch.me/uploads/${filename}.${ext}&filename=${JSON.stringify(document.getElementById("exampleFormControlFile1").value).split("\\")[4].split("\"")[0]}`);
 
+            var path = window.location.pathname.split("/")[1] + "/" + window.location.pathname.split("/")[2] + "/" + window.location.pathname.split("/")[3]
+            window.location.replace(`${window.location.origin}/${path}/${JSON.stringify(document.getElementById("exampleFormControlFile1").value).split("\\")[4].split("\"")[0]}`)
         }
     </script>
 {% endblock %}
