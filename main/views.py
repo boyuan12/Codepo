@@ -28,7 +28,7 @@ def new(request):
         r = Repository(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status)
         r.save()
 
-        d = Directory(repo_id=Repository.objects.get(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status).id, name="/")
+        d = Directory(repo_id=Repository.objects.get(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status).id, name="/", dir_id=0, path="/")
         d.save()
 
         return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['name']}/")

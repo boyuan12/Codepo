@@ -15,4 +15,6 @@ class File(models.Model):
 
 class Directory(models.Model):
     repo_id = models.IntegerField()
+    dir_id = models.IntegerField() # keep track which subdir it belongs
     name = models.CharField(max_length=255)
+    path = models.CharField(max_length=255)
