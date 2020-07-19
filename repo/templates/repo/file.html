@@ -5,4 +5,18 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
     <pre><code>{{ content }}</code></pre>
+
+    <script>
+        var path = window.location.pathname.split("/");
+        for (let i=4; i<path.length; i++) {
+            var LI = document.createElement("LI");
+            var string = "/"
+            for (let j=1; j<i; j++) {
+                string += path[j] + "/";
+            }
+            LI.innerHTML = `<a href="${string}${path[i]}">${path[i]}</a>`
+            LI.setAttribute("class", "breadcrumb-item");
+            document.getElementById("breadcrumb").appendChild(LI);
+        }
+    </script>
 {% endblock %}
