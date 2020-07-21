@@ -1,3 +1,4 @@
+
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 import os
@@ -7,12 +8,15 @@ from django.contrib.auth.decorators import login_required
 from .models import Repository, File, Directory
 
 # Create your views here.
-@login_required(login_url='/auth/login/')
+# @login_required(login_url='/auth/login/')
 def index(request):
-    repos = Repository.objects.filter(user_id=request.user.id)
-    return render(request, "main/index.html", {
-        "repos": repos
-    })
+    if request.user.is_authenticated:
+        repos = Repository.objects.filter(user_id=request.user.id)
+        return render(request, "main/index.html", {
+            "repos": repos
+        })
+    else:
+        return render(request, "main/default.html")
 
 
 @login_required(login_url='/auth/login/')
