@@ -1,14 +1,12 @@
-
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect
 import os
 import GitHubClone.settings as settings
 from django.contrib.auth.decorators import login_required
-
+from django.contrib.auth.admin import User
 from .models import Repository, File, Directory
 
 # Create your views here.
-# @login_required(login_url='/auth/login/')
 def index(request):
     if request.user.is_authenticated:
         repos = Repository.objects.filter(user_id=request.user.id)
@@ -16,7 +14,7 @@ def index(request):
             "repos": repos
         })
     else:
-        return render(request, "main/default.html")
+        return render(request, "main/home.html")
 
 
 @login_required(login_url='/auth/login/')
@@ -39,3 +37,28 @@ def new(request):
 
     else:
         return render(request, "main/new.html")
+
+
+def profile(request, username):
+
+    try:
+        user = User.objects.get(username=username)
+    except:
+        return HttpResponse("user doesn't exist")
+
+    tab = ""
+
+    try:
+        if request.GET["tab"] == "repo":
+            tab = "repo"
+    except:
+        tab = "overview"
+
+    repos = Repository.objects.filter(user_id=user.id)
+
+    return render(request, "main/user.html", {
+        "username": username,
+        "tab": tab,
+        "repos": repos,
+        "user": user
+    })

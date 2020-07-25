@@ -106,7 +106,7 @@ def modify_file(request):
 
         if path[len(path)-1] != "/":
             path += "/"
-        
+
         print(path)
         d = Directory.objects.get(repo_id=repo.id, path=path)
         f = File.objects.filter(repo_id=repo.id, directory_id=d.id, filename=filename).update(url=url)
@@ -161,3 +161,25 @@ def delete_file(request):
             pass
 
         return JsonResponse({"message": "success"})
+
+
+def repos(request):
+
+    if request.method == "GET":
+
+        username = request.GET["username"]
+        user = User.objects.get(username=username)
+        repos = Repository.objects.filter(user_id=user.id)
+
+        data = {"repos": []}
+
+        for r in repos:
+            repo_info = {}
+            repo_info["name"] = r.name
+            data["repos"].append(repo_info)
+            print(data["repos"])
+
+        return JsonResponse(data=data)
+
+    else:
+        return JsonResponse({"message": "Can't access other HTTP request than GET on this route."})

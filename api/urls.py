@@ -7,5 +7,6 @@ urlpatterns = [
     path("delete-directory/", views.delete_repository),
     path("modify-file/", views.modify_file),
     path("add-file/", views.add_file),
-    path("delete-file/", views.delete_file)
+    path("delete-file/", views.delete_file),
+    path("repos/", views.repos)
 ]
