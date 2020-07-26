@@ -55,8 +55,10 @@ def login_view(request):
             else:
                 return HttpResponse("invalid")
 
-        if request.GET["next"]:
+        try:
             return HttpResponseRedirect(request.GET["next"])
+        except:
+            pass
         return HttpResponseRedirect("/")
 
     else:
