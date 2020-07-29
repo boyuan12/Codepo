@@ -1,0 +1,67 @@
+  
+{% extends "main/base.html" %}
+
+{% block main %}
+    <h1 style="text-align: center;">{{ request.user.username }}</h1>
+    <div class="container mx-auto">
+        {% if not p.avatar %}
+            <div id="storeImg">
+                <img src="https://iupac.org/wp-content/uploads/2018/05/default-avatar.png" width="280px" style="border-radius: 50%; z-index: 2;" id="preview">
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="file" onchange="previewFile();">
+                <textarea style="width: 500px; height: 100px; padding-left: 25px;" name="desc">Lorem ipsum dolor sit amet consectetur adipisicing elit. Sit aspernatur distinctio impedit aut est harum fugit illo aperiam repellat ipsa.</textarea> <br>
+                <input type="text" placeholder="organization" style="width: 300px;" name="org"> <br>
+                <input type="text" placeholder="location" style="width: 300px;" name="loc"> <br>
+                <input type="url" placeholder="website" style="width: 300px;" name="web"> <br>
+                <input type="submit">
+            </form>
+        {% else %}
+            <div id="storeImg">
+                <img src="{{ p.avatar }}" width="280px" style="border-radius: 50%; z-index: 2;" id="preview">
+            </div>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                <input type="file" name="file" onchange="previewFile();">
+                <textarea style="width: 500px; height: 100px; padding-left: 25px;" name="desc">{{ p.description }}</textarea> <br>
+                <input type="text" placeholder="organization" style="width: 300px;" name="org" value="{{ p.organization }}"> <br>
+                <input type="text" placeholder="location" style="width: 300px;" name="loc" value="{{ p.location }}"> <br>
+                <input type="url" placeholder="website" style="width: 300px;" name="web" value="{{ p.website }}"> <br>
+                <input type="submit">
+            </form>
+        {% endif %}
+    </div>
+    <script>
+        function previewFile() {
+            if (document.querySelector("#preview") === null) {
+                var preview = document.createElement("img");
+                preview.setAttribute("id", "preview");
+            } else {
+                var preview = document.querySelector("#preview")
+            }
+
+            console.log(preview)
+
+            var file    = document.querySelector('input[type=file]').files[0];
+            var reader  = new FileReader();
+
+            reader.onloadend = function () {
+                preview.setAttribute("src", reader.result);
+            }
+
+            if (file) {
+                reader.readAsDataURL(file);
+            } else {
+                preview.src = "";
+            }
+
+            try {
+                document.getElementById("storeImg").appendChild(preview)
+            } catch(err) {
+                
+            }
+        }
+    </script>
+
+{% endblock %}

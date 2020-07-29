@@ -4,3 +4,4 @@ django-heroku
 gunicorn
 sentry-sdk==0.16.1
 termcolor
+cloudinary

@@ -18,3 +18,16 @@ class Directory(models.Model):
     dir_id = models.IntegerField() # keep track which subdir it belongs
     name = models.CharField(max_length=255)
     path = models.CharField(max_length=255)
+
+
+class Profile(models.Model):
+    user_id = models.IntegerField()
+    description = models.TextField()
+    organization = models.CharField(max_length=50)
+    location = models.CharField(max_length=50)
+    website = models.URLField()
+    avatar = models.URLField()
+
+class Follows(models.Model):
+    user_id = models.IntegerField()
+    following = models.IntegerField()

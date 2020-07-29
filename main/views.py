@@ -4,7 +4,17 @@ import os
 import GitHubClone.settings as settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.admin import User
-from .models import Repository, File, Directory
+from .models import Repository, File, Directory, Profile
+
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
+
+cloudinary.config(
+    cloud_name = "boyuan12",
+    api_key = "893778436618783",
+    api_secret = "X4LufXPHxvv4hROS3VZWYyR3tIE"
+)
 
 # Create your views here.
 def index(request):
@@ -56,9 +66,54 @@ def profile(request, username):
 
     repos = Repository.objects.filter(user_id=user.id)
 
+    try:
+        p = Profile.objects.get(user_id=user.id)
+    except:
+        p = []
+
     return render(request, "main/user.html", {
         "username": username,
         "tab": tab,
         "repos": repos,
-        "user": user
+        "user": user,
+        "p": p
     })
+
+
+@login_required(login_url='/auth/login/')
+def edit_profile(request):
+    if request.method == "POST":
+        try:
+            r = cloudinary.uploader.upload(request.FILES['file'])
+            img_url = r["secure_url"]
+        except:
+            pass
+
+        try:
+            p = Profile.objects.get(user_id=request.user.id)
+            p.description = request.POST["desc"]
+            p.organization = request.POST["org"]
+            p.location = request.POST["loc"]
+            p.website = request.POST["web"]
+            try:
+                p.avatar = img_url
+            except:
+                pass
+            p.save()
+        except:
+            try:
+                p = Profile(user_id=request.user.id, description=request.POST["desc"], organization=request.POST["org"], location=request.POST["loc"], website=request.POST["web"], avatar=img_url)
+            except:
+                p = Profile(user_id=request.user.id, description=request.POST["desc"], organization=request.POST["org"], location=request.POST["loc"], website=request.POST["web"], avatar="https://iupac.org/wp-content/uploads/2018/05/default-avatar.png")
+            p.save()
+
+        return HttpResponseRedirect("/profile/")
+
+    else:
+        try:
+            p = Profile.objects.get(user_id=request.user.id)
+        except:
+            p = []
+        return render(request, "main/profile.html", {
+            "p": p
+        })
