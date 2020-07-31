@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from main.models import Profile
+from main.models import Profile, Follows
 from django.http import HttpResponseRedirect, HttpResponse
 
 # Create your views here.
@@ -35,7 +35,9 @@ def register(request):
 
         login(request, User.objects.get(username=username))
 
-        return HttpResponse("success")
+        request.session["img"] = Profile.objects.get(user_id=request.user.id).avatar
+
+        return HttpResponseRedirect("/")
 
     else:
         return render(request, "authenticate/register.html")
@@ -59,9 +61,12 @@ def login_view(request):
             else:
                 return HttpResponse("invalid")
 
-        if request.GET["next"]:
+        request.session["img"] = Profile.objects.get(user_id=request.user.id).avatar
+
+        try:
             return HttpResponseRedirect(request.GET["next"])
-        return HttpResponseRedirect("/")
+        except:
+            return HttpResponseRedirect("/")
 
     else:
         return render(request, "authenticate/login.html")

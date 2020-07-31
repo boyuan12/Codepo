@@ -1,20 +1,35 @@
 from django.shortcuts import render
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import os
 import GitHubClone.settings as settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.admin import User
-from .models import Repository, File, Directory, Profile
+from .models import Repository, File, Directory, Profile, Follows
 
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+
+import requests
+import random
+from termcolor import colored
 
 cloudinary.config(
     cloud_name = "boyuan12",
     api_key = "893778436618783",
     api_secret = "X4LufXPHxvv4hROS3VZWYyR3tIE"
 )
+
+def random_words(n=3):
+    word_site = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
+    response = requests.get(word_site)
+    WORDS = response.content.splitlines()
+    words = ""
+    for i in range(n):
+        word = random.choice(WORDS).decode("utf-8")
+        words += word.capitalize()
+    return words
+
 
 # Create your views here.
 def index(request):
@@ -71,12 +86,23 @@ def profile(request, username):
     except:
         p = []
 
+    following = (Follows.objects.filter(following=user.id))
+    follows = (Follows.objects.filter(user_id=user.id))
+    followed = False
+
+    for i in following:
+        if i.following == user.id:
+            followed = True
+
     return render(request, "main/user.html", {
         "username": username,
         "tab": tab,
         "repos": repos,
         "user": user,
-        "p": p
+        "p": p,
+        "follows": follows,
+        "following": following,
+        "followed": followed
     })
 
 
@@ -97,6 +123,7 @@ def edit_profile(request):
             p.website = request.POST["web"]
             try:
                 p.avatar = img_url
+                request.session["img"] = img_url
             except:
                 pass
             p.save()
@@ -117,3 +144,22 @@ def edit_profile(request):
         return render(request, "main/profile.html", {
             "p": p
         })
+
+
+@login_required(login_url='/auth/login/')
+def follow_user(request):
+    user = User.objects.get(username=request.GET["username"])
+    f = Follows(user_id=request.user.id, following=user.id)
+    f.save()
+
+    print(f)
+
+    return JsonResponse({"message": "success"})
+
+
+@login_required(login_url='/auth/login/')
+def unfollow_user(request):
+    user = User.objects.get(username=request.GET["username"])
+    print(request.user.id, user.id)
+    Follows.objects.filter(user_id=request.user.id, following=user.id).delete()
+    return JsonResponse({"message": "success"})
