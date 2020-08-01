@@ -5,6 +5,7 @@ import GitHubClone.settings as settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.admin import User
 from .models import Repository, File, Directory, Profile, Follows
+from oauth.models import OAuth, Uri, Token
 
 import cloudinary
 import cloudinary.uploader
@@ -12,6 +13,7 @@ import cloudinary.api
 
 import requests
 import random
+import string
 from termcolor import colored
 
 cloudinary.config(
@@ -30,6 +32,24 @@ def random_words(n=3):
         words += word.capitalize()
     return words
 
+
+def random_str(n):
+    s = ""
+    for i in range(n):
+        s += random.choice(string.ascii_letters + string.digits)
+    return s
+
+def validate_url(url):
+    # https://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
+    import re
+    regex = re.compile(
+        r'^(?:http|ftp)s?://' # http:// or https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|' #domain...
+        r'localhost|' #localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})' # ...or ip
+        r'(?::\d+)?' # optional port
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    return re.match(regex, url) is not None
 
 # Create your views here.
 def index(request):
@@ -141,8 +161,20 @@ def edit_profile(request):
             p = Profile.objects.get(user_id=request.user.id)
         except:
             p = []
+
+        try:
+            oauth = OAuth.objects.filter(user_id=request.user.id)
+        except:
+            oauth = []
+
+        uris = {}
+        for o in oauth:
+            uris[o.client_id] = Uri.objects.filter(client_id=o.client_id)
+
         return render(request, "main/profile.html", {
-            "p": p
+            "p": p,
+            "oauth": oauth,
+            "uris": uris,
         })
 
 
@@ -163,3 +195,27 @@ def unfollow_user(request):
     print(request.user.id, user.id)
     Follows.objects.filter(user_id=request.user.id, following=user.id).delete()
     return JsonResponse({"message": "success"})
+
+
+@login_required(login_url='/auth/login/')
+def create_oauth_app(request):
+    # app = OAuth(user_id=request.user.id, client_id=)
+    if request.method == "POST":
+        client_id = random_str(20)
+        try:
+            while True:
+                OAuth.objects.get(client_id=client_id)
+                client_id = random_str(20)
+        except:
+            pass
+
+        app = OAuth(user_id=request.user.id, name=request.POST["name"], client_id=client_id,    client_secret=random_str(50))
+        app.save()
+
+        uris = request.POST["redirect_uri"].split(",")
+        for i in uris:
+            if validate_url(i):
+                u = Uri(client_id=client_id, redirect_uri=i)
+                u.save()
+
+        return HttpResponseRedirect("/profile/")

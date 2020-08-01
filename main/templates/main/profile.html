@@ -1,4 +1,3 @@
-  
 {% extends "main/base.html" %}
 
 {% block main %}
@@ -31,6 +30,34 @@
                 <input type="submit">
             </form>
         {% endif %}
+
+        <h2>OAuth App</h2>
+        <form action="/create-oauth-app/" method="POST">
+            {% csrf_token %}
+            <label>App Name</label>
+            <input type="text" name="name">
+            <label>Redirect URIs (if multiple, seperate by a single comma)</label>
+            <textarea name="redirect_uri"></textarea>
+            <input type="submit">
+        </form>
+        <h3>OAuth App Owned By You</h3>
+        {% for app in oauth %}
+            <div>
+                Name: {{ app.name }} <br>
+                Client ID: {{ app.client_id }} <br>
+                Client Secret: {{ app.client_secret }} <br>
+                Redirect URIs:
+                <ul>
+                    {% for key, value in uris.items %}
+                        {% if key == app.client_id %}
+                            {% for url in value %}
+                                <li>{{ url.redirect_uri }}</li>
+                            {% endfor %}
+                        {% endif %}
+                    {% endfor %}
+                </ul>
+            </div>
+        {% endfor %}
     </div>
     <script>
         function previewFile() {
@@ -59,7 +86,7 @@
             try {
                 document.getElementById("storeImg").appendChild(preview)
             } catch(err) {
-                
+
             }
         }
     </script>
