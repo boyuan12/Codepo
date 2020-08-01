@@ -44,9 +44,9 @@ def repo(request, username, repo, url="/"):
             del p[-1]
             print(p)
             if len(p) != 0:
-                dir = Directory.objects.get(path="/"+"/".join(p)+"/")
+                dir = Directory.objects.get(path="/"+"/".join(p)+"/", repo_id=r.id)
             else:
-                dir = Directory.objects.get(path="/")
+                dir = Directory.objects.get(path="/", repo_id=r.id)
     try:
         files = File.objects.filter(repo_id=r.id, directory_id=dir.id)
         for f in files:
@@ -58,9 +58,9 @@ def repo(request, username, repo, url="/"):
                 p = "/".join(p)
                 print(p)
                 if len(p) != 0:
-                    d = Directory.objects.get(path="/"+p+"/")
+                    d = Directory.objects.get(path="/"+p+"/", repo_id=r.id)
                 else:
-                    d = Directory.objects.get(path="/")
+                    d = Directory.objects.get(path="/", repo_id=r.id)
                 file = File.objects.get(repo_id=r.id, directory_id=d.id, filename=filename)
                 print(file.url)
                 r = requests.get(file.url)
@@ -106,7 +106,7 @@ def upload(request, username, repo, url="/"):
         d = Directory.objects.get(repo_id=r, path="/" + url + "/").id
     f = File(repo_id=r, filename=request.GET["filename"], directory_id=d, url=request.GET["url"])
     f.save()
-    return JsonResponse(message="success")
+    return JsonResponse(data={"message": "success"})
 
 
 def create_folder(request, username, repo, url="/"):
@@ -128,3 +128,24 @@ def create_folder(request, username, repo, url="/"):
             "repo": repo,
             "username": username
         })
+
+
+def delete(request):
+    url = request.GET["url"]
+    url = url.split("/")
+    username = url[1]
+    repo = url[2]
+    filename = url[len(url)-2]
+    print(colored(filename, "cyan"))
+    dir_path = "/"
+    del url[0:3]
+    del url[len(url)-1]
+    for i in range(0, len(url)-1):
+        dir_path += url[i] + "/"
+
+    r = Repository.objects.get(user_id=request.user.id, name=repo)
+    d = Directory.objects.get(repo_id=r.id, path=dir_path)
+    f = File.objects.get(repo_id=r.id, directory_id=d.id, filename=filename)
+    f.delete()
+
+    return HttpResponse(dir_path)
