@@ -16,6 +16,9 @@ import random
 import string
 from termcolor import colored
 
+import boto3
+import pathlib
+
 cloudinary.config(
     cloud_name = "boyuan12",
     api_key = "893778436618783",

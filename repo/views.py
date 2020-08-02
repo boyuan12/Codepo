@@ -11,12 +11,34 @@ import requests
 
 from GitHubClone.settings import DEBUG
 
+import boto3
+import random
+import string
+import pathlib
+
 from termcolor import colored
 BASE_URL = "https://github-clone-dj.herokuapp.com"
 
+def random_str(n):
+    s = ""
+    for i in range(n):
+        s += random.choice(string.ascii_letters + string.digits)
+    return s
+
+def upload_s3(request):
+    s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
+    name = random_str(10)
+    s3.Bucket('githubclone').put_object(Key=f"{name}.{pathlib.Path(request.FILES['file'].name).suffix}", Body=request.FILES["file"])
+    return f"{name}.{pathlib.Path(request.FILES['file'].name).suffix}"
+
+def get_s3(name):
+    s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
+    obj = s3.Object("githubclone", f"{name}")
+    body = obj.get()['Body'].read()
+    return body
 
 # Create your views here.
-@login_required(login_url='/auth/login/')
+# @login_required(login_url='/auth/login/')
 def repo(request, username, repo, url="/"):
     # check whether it's valid
     # get user id
@@ -63,10 +85,10 @@ def repo(request, username, repo, url="/"):
                     d = Directory.objects.get(path="/", repo_id=r.id)
                 file = File.objects.get(repo_id=r.id, directory_id=d.id, filename=filename)
                 print(file.url)
-                r = requests.get(file.url)
+                content = get_s3(file.url)
                 return render(request, "repo/file.html", {
                     "repo": repo,
-                    "content": r.text,
+                    "content": content.decode("utf-8"),
                     "username": username
                 })
     except Exception as e:
@@ -90,23 +112,24 @@ def repo(request, username, repo, url="/"):
 
 @login_required(login_url='/auth/login/')
 def upload(request, username, repo, url="/"):
-    print(url)
-    try:
-        request.GET["url"]
-    except Exception as e:
-        print(colored(e, "cyan"))
+    if request.method == "POST":
+        name = upload_s3(request)
+        r = Repository.objects.get(user_id=request.user.id, name=repo).id
+        if url == "/":
+            d = Directory.objects.get(repo_id=r, path="/").id
+        else:
+            d = Directory.objects.get(repo_id=r, path="/" + url + "/").id
+        f = File(repo_id=r, filename=request.FILES["file"].name, directory_id=d, url=name)
+        f.save()
+        if url == "/":
+            return HttpResponseRedirect(f"/repo/{username}/{repo}/{request.FILES['file'].name}")
+        else:
+            return HttpResponseRedirect(f"/repo/{username}/{repo}/{url}/{request.FILES['file'].name}")
+    else:
         return render(request, "repo/upload.html", {
             "repo": repo,
             "username": username
         })
-    r = Repository.objects.get(user_id=request.user.id, name=repo).id
-    if url == "/":
-        d = Directory.objects.get(repo_id=r, path="/").id
-    else:
-        d = Directory.objects.get(repo_id=r, path="/" + url + "/").id
-    f = File(repo_id=r, filename=request.GET["filename"], directory_id=d, url=request.GET["url"])
-    f.save()
-    return JsonResponse(data={"message": "success"})
 
 
 def create_folder(request, username, repo, url="/"):
