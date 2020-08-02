@@ -3,10 +3,20 @@
 {% block main %}
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/default.min.css">
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-    <pre><code>{{ content }}</code></pre>
+    <script src="//cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
+    <script>
+        hljs.initHighlightingOnLoad();
+        hljs.initLineNumbersOnLoad();
+    </script>
+    <pre><code class="hljs">{{ content }}</code></pre>
 
     <script>
+        $(document).ready(function() {
+            $('code.hljs').each(function(i, block) {
+                hljs.lineNumbersBlock(block);
+            });
+        });
+
         var path = window.location.pathname.split("/");
         for (let i=4; i<path.length; i++) {
             var LI = document.createElement("LI");
