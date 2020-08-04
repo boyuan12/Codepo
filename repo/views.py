@@ -100,11 +100,17 @@ def repo(request, username, repo, url="/"):
         print(colored(e, "cyan"))
         directories = set()
     # print(colored(directories, "cyan"))
+    try:
+        readme = File.objects.get(directory_id=dir.id, filename="README.md")
+        readme = get_s3(readme.url).decode("utf-8")
+    except:
+        readme = None
     return render(request, "repo/repo.html", {
         "repo": repo,
         "files": files,
         "dirs": directories,
-        "username": username
+        "username": username,
+        "readme": readme
     })
 
 
