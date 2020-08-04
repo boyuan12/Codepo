@@ -1,3 +1,4 @@
+
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.contrib.auth.decorators import login_required
@@ -24,6 +25,7 @@ def random_str(n):
     for i in range(n):
         s += random.choice(string.ascii_letters + string.digits)
     return s
+
 
 def upload_s3(request):
     s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
@@ -99,12 +101,14 @@ def repo(request, username, repo, url="/"):
     except Exception as e:
         print(colored(e, "cyan"))
         directories = set()
-    # print(colored(directories, "cyan"))
+
     try:
         readme = File.objects.get(directory_id=dir.id, filename="README.md")
         readme = get_s3(readme.url).decode("utf-8")
     except:
         readme = None
+    print(readme)
+    # print(colored(directories, "cyan"))
     return render(request, "repo/repo.html", {
         "repo": repo,
         "files": files,
