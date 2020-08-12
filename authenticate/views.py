@@ -50,16 +50,14 @@ def login_view(request):
         username = request.POST["username"]
         password = request.POST["password"]
 
-        user = authenticate(username=username, password=password)
+        user1 = authenticate(username=username, password=password)
 
-        if user is not None:
-            login(request, user)
+        if user1 is not None:
+            login(request, user1)
         else:
-            user = authenticate(email=username, password=password)
-            if user is not None:
-                login(request,user)
-            else:
-                return HttpResponse("invalid")
+            return HttpResponse("invalid")
+
+        print(user1)
 
         request.session["img"] = Profile.objects.get(user_id=request.user.id).avatar
 

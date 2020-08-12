@@ -105,7 +105,8 @@ def repo(request, username, repo, url="/"):
     try:
         readme = File.objects.get(directory_id=dir.id, filename="README.md")
         readme = get_s3(readme.url).decode("utf-8")
-    except:
+    except Exception as e:
+        print(str(e))
         readme = None
     print(readme)
     # print(colored(directories, "cyan"))
@@ -114,7 +115,8 @@ def repo(request, username, repo, url="/"):
         "files": files,
         "dirs": directories,
         "username": username,
-        "readme": readme
+        "readme": readme,
+        "root": True if url == "/" else False
     })
 
 
@@ -182,3 +184,6 @@ def delete(request):
     f.delete()
 
     return HttpResponse(dir_path)
+
+def delete_folder(request):
+    path = request.GET["path"]

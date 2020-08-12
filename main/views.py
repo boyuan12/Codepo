@@ -21,8 +21,8 @@ import pathlib
 
 cloudinary.config(
     cloud_name = "boyuan12",
-    api_key = "893778436618783",
-    api_secret = "X4LufXPHxvv4hROS3VZWYyR3tIE"
+    api_key = os.getenv("CLOUDINARY_API_KEY"),
+    api_secret = os.getenv("CLOUDINARY_API_SECRET")
 )
 
 def random_words(n=3):
@@ -86,7 +86,7 @@ def new(request):
     else:
         return render(request, "main/new.html")
 
-
+@login_required(login_url='/auth/login/')
 def profile(request, username):
 
     try:
