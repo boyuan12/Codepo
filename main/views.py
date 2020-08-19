@@ -4,7 +4,7 @@ import os
 import GitHubClone.settings as settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.admin import User
-from .models import Repository, File, Directory, Profile, Follows
+from .models import Repository, File, Directory, Profile, Follows, Branch
 from oauth.models import OAuth, Uri, Token
 
 import cloudinary
@@ -21,8 +21,8 @@ import pathlib
 
 cloudinary.config(
     cloud_name = "boyuan12",
-    api_key = os.getenv("CLOUDINARY_API_KEY"),
-    api_secret = os.getenv("CLOUDINARY_API_SECRET")
+    api_key = "893778436618783",
+    api_secret = "X4LufXPHxvv4hROS3VZWYyR3tIE"
 )
 
 def random_words(n=3):
@@ -78,8 +78,11 @@ def new(request):
         r = Repository(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status)
         r.save()
 
-        d = Directory(repo_id=Repository.objects.get(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status).id, name="/", dir_id=0, path="/")
+        d = Directory(repo_id=Repository.objects.get(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status).id, name="/", dir_id=0, path="/", branch="master")
         d.save()
+
+        b = Branch(repo_id=Repository.objects.get(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status).id, name="master")
+        b.save()
 
         return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['name']}/")
 
@@ -222,3 +225,18 @@ def create_oauth_app(request):
                 u.save()
 
         return HttpResponseRedirect("/profile/")
+
+
+@login_required(login_url="/auth/login/")
+def create_new_branch(request):
+    if request.method == "POST":
+        b = request.POST["name"]
+        r = request.POST["repo"]
+
+        r = Repository.objects.get(user_id=request.user.id, name=r)
+        b = Branch(repo_id=r.id, name=b)
+        b.save()
+        d = Directory(repo_id=r.id, dir_id=0, name="/", path="/", branch=request.POST["name"])
+        d.save()
+
+        return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['repo']}/?b={request.POST['name']}")

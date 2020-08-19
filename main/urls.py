@@ -8,5 +8,6 @@ urlpatterns = [
     path("follow/", views.follow_user),
     path("unfollow/", views.unfollow_user),
     path("create-oauth-app/", views.create_oauth_app),
+    path("new-branch/", views.create_new_branch),
     path("<str:username>/", views.profile),
 ]

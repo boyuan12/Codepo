@@ -12,12 +12,15 @@ class File(models.Model):
     filename = models.CharField(max_length=100)
     directory_id = models.IntegerField()
     url = models.CharField(max_length=500)
+    branch = models.CharField(max_length=100)
+
 
 class Directory(models.Model):
     repo_id = models.IntegerField()
     dir_id = models.IntegerField() # keep track which subdir it belongs
     name = models.CharField(max_length=255)
     path = models.CharField(max_length=255)
+    branch = models.CharField(max_length=100)
 
 
 class Profile(models.Model):
@@ -28,6 +31,12 @@ class Profile(models.Model):
     website = models.URLField()
     avatar = models.URLField()
 
+
 class Follows(models.Model):
     user_id = models.IntegerField()
     following = models.IntegerField()
+
+
+class Branch(models.Model):
+    repo_id = models.IntegerField()
+    name = models.CharField(max_length=20)
