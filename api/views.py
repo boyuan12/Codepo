@@ -183,3 +183,7 @@ def repos(request):
 
     else:
         return JsonResponse({"message": "Can't access other HTTP request than GET on this route."})
+
+
+def sentry_webhook(request):
+    print(request.POST)

@@ -240,3 +240,17 @@ def create_new_branch(request):
         d.save()
 
         return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['repo']}/?b={request.POST['name']}")
+
+
+@login_required(login_url="/auth/login/")
+def repo_settings(request, username, repo):
+    if request.method == "POST":
+        pass
+    else:
+        r = Repository.objects.get(user_id=request.user.id, name=repo)
+        print(r.status)
+        return render(request, "main/settings.html", {
+            "username": username,
+            "repo": repo,
+            "status": r.status
+        })

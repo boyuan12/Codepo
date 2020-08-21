@@ -207,3 +207,24 @@ def delete(request):
 
 def delete_folder(request):
     path = request.GET["path"]
+
+
+def delete_repo(request, username, repo):
+    user = User.objects.get(username=username)
+    repo = Repository.objects.get(user_id=user.id, name=repo)
+    Directory.objects.filter(repo_id=repo.id).delete()
+    File.objects.filter(repo_id=repo.id).delete()
+    Branch.objects.filter(repo_id=repo.id).delete()
+    repo.delete()
+    return HttpResponseRedirect("/")
+
+
+def change_repo_visibility(request, username, repo):
+    user = User.objects.get(username=username)
+    repo = Repository.objects.get(user_id=user.id, name=repo)
+    status = 0
+    if request.POST["status"] == "private":
+        status = 1
+    repo.status = status
+    repo.save()
+    return HttpResponse(f"/repo/{username}/{repo.name}")

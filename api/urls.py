@@ -8,5 +8,6 @@ urlpatterns = [
     path("modify-file/", views.modify_file),
     path("add-file/", views.add_file),
     path("delete-file/", views.delete_file),
-    path("repos/", views.repos)
+    path("repos/", views.repos),
+    path("sentry/", views.sentry_webhook)
 ]
