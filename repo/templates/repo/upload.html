@@ -1,16 +1,80 @@
 {% extends "repo/base.html" %}
 
 {% block main %}
-    <form method="POST" enctype="multipart/form-data">
+    <!-- <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="form-group">
             <label for="exampleFormControlFile1">Example file input</label>
-            <!-- <input type="hidden" id="filename" name="filename"> -->
+            <!-- <input type="hidden" id="filename" name="filename">
             <input type="file" class="form-control-file" id="exampleFormControlFile1" name="file">
         </div>
         <button type="submit" class="btn btn-primary" id="button">Upload</button>
-    </form>
+    </form> -->
+    <p>There's some bugs within this new upload interface. Please report any issue you experience to </p>
+    <style>
+        #dropzone {
+            height: 200px;
+            border: 5px solid;
+            margin: 1em;
+            border-radius: 20px;
+        }
+    </style>
+    <div id="dropzone">
+        <div style="text-align: center; margin-top: 50px;">
+            <img src="https://github.githubassets.com/images/files-lg.svg"> <br> <br>
+            <p>Drag & Drop Files/Folders Here</p>
+        </div>
+    </div>
+    <ul id="files"></ul>
+    <script>
+        var dropzone = document.getElementById("dropzone");
 
+        dropzone.addEventListener("drop", function(e) {
+            e.stopPropagation();
+            e.preventDefault();
+            var items = event.dataTransfer.items;
+            for (var i = 0; i < items.length; i++) {
+                var entry = items[i].webkitGetAsEntry();
+                if (entry) {
+                    traverse(entry);
+                }
+            }
+        }, false);
+
+        dropzone.ondragover = function (e) {
+            e.preventDefault()
+        }
+
+        function traverse(entry, path) {
+            path = path || "";
+            if (entry.isFile) {
+                // Get file
+
+                entry.file(function(file) {
+                    const formData = new FormData()
+                    formData.append("file", file)
+                    formData.append("path", path)
+                    fetch(`/repo/${location.pathname.split("/")[2]}/${location.pathname.split("/")[3]}/upload/`, {
+                        method: 'POST',
+                        body: formData
+                    })
+                    var LI = document.createElement("LI")
+                    LI.innerText = path + file.name
+                    document.getElementById("files").appendChild(LI);
+                    console.log("File:", path + file.name);
+                });
+            } else if (entry.isDirectory) {
+                // Get folder contents
+                var dirReader = entry.createReader();
+                dirReader.readEntries(function(entries) {
+                for (var i = 0; i < entries.length; i++) {
+                    traverse(entries[i], path + entry.name + "/");
+                }
+                });
+            }
+        }
+        location.assign = "/repo/demo/demo/"
+    </script>
     <!-- <script>
         function randomString(length) {
             var result = '';

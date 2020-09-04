@@ -1,12 +1,13 @@
 from django.shortcuts import render
-from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
+from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
 
 import os
 
-from main.models import Repository, Directory, File, Branch
+from main.models import Repository, Directory, File, Branch, Star
 import requests
 
 from GitHubClone.settings import DEBUG
@@ -17,7 +18,11 @@ import string
 import pathlib
 
 from termcolor import colored
+
+
 BASE_URL = "https://github-clone-dj.herokuapp.com"
+
+s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
 
 def random_str(n):
     s = ""
@@ -26,10 +31,9 @@ def random_str(n):
     return s
 
 def upload_s3(request):
-    s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
     name = random_str(10)
-    s3.Bucket('githubclone').put_object(Key=f"{name}.{pathlib.Path(request.FILES['file'].name).suffix}", Body=request.FILES["file"])
-    return f"{name}.{pathlib.Path(request.FILES['file'].name).suffix}"
+    s3.Bucket('githubclone').put_object(Key=f"{name}{pathlib.Path(request.FILES['file'].name).suffix}", Body=request.FILES["file"], ACL="public-read")
+    return f"{name}{pathlib.Path(request.FILES['file'].name).suffix}"
 
 def get_s3(name):
     s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
@@ -39,113 +43,86 @@ def get_s3(name):
 
 # Create your views here.
 # @login_required(login_url='/auth/login/')
-def repo(request, username, repo, url="/"):
-    # check whether it's valid
-    # get user id
-    print(colored(url, "red"))
-    try:
-        user_id = User.objects.get(username=username).id
-    except:
-        return HttpResponse("404 Not Found")
-
-    try:
-        r = Repository.objects.get(user_id=user_id, name=repo)
-    except:
-        return HttpResponse("404")
-
-    if r.status == 1 and r.user_id != request.user.id:
-        return HttpResponse("403")
+def repo(request, username, repo, path="/"):
 
     try:
         b = request.GET["b"]
     except:
         b = "master"
-    # return HttpResponse(b)
-    try:
-        dir = Directory.objects.get(path="/" + url + "/", repo_id=r.id, branch=b)
-    except Exception as e:
-        if url == "/":
-            dir = Directory.objects.get(path="/", repo_id=r.id, branch=b)
-        else:
-            p = url.split("/")
-            del p[-1]
-            print(p)
-            if len(p) != 0:
-                dir = Directory.objects.get(path="/"+"/".join(p)+"/", repo_id=r.id, branch=b)
-            else:
-                dir = Directory.objects.get(path="/", repo_id=r.id, branch=b)
-    try:
-        files = File.objects.filter(repo_id=r.id, directory_id=dir.id, branch=b)
-        for f in files:
-            print(colored(url.split("/")[len(url.split("/"))-1], "yellow"))
-            if f.filename == url or f.filename == url.split("/")[len(url.split("/"))-1]:
-                p = url.split("/")
-                filename = p[-1]
-                del p[-1]
-                p = "/".join(p)
-                print(p)
-                if len(p) != 0:
-                    d = Directory.objects.get(path="/"+p+"/", repo_id=r.id, branch=b)
-                else:
-                    d = Directory.objects.get(path="/", repo_id=r.id, branch=b)
-                file = File.objects.get(repo_id=r.id, directory_id=d.id, filename=filename, branch=b)
-                print(file.url)
-                content = get_s3(file.url)
-                return render(request, "repo/file.html", {
-                    "repo": repo,
-                    "content": content.decode("utf-8"),
-                    "username": username
-                })
-    except Exception as e:
-        print(colored(e, "cyan"))
-        files = []
-    try:
-        directories = Directory.objects.filter(dir_id=dir.id, branch=b)
-    except Exception as e:
-        print(colored(e, "cyan"))
-        directories = set()
 
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(name=repo, user_id=user.id)
+
+    if "/" not in path or path != "/":
+        path = "/" + path + "/"
+
+    # check for directory or file using path
     try:
-        readme = File.objects.get(directory_id=dir.id, filename="README.md", branch=b)
-        readme = get_s3(readme.url).decode("utf-8")
-    except Exception as e:
-        print(str(e))
-        readme = None
-    print(readme)
-    # print(colored(directories, "cyan"))
-    return render(request, "repo/repo.html", {
-        "repo": repo,
-        "files": files,
-        "dirs": directories,
-        "username": username,
-        "readme": readme,
-        "root": True if url == "/" else False,
-        "branches": Branch.objects.filter(repo_id=r.id),
-        "b": b
-    })
+        d = Directory.objects.get(repo_id=r.id, path=path, branch=b)
+        dirs = Directory.objects.filter(repo_id=r.id, subdir=d.id, branch=b)
+        print(dirs)
+        files = File.objects.filter(repo_id=r.id, subdir=d.id, branch=b)
+        return render(request, "repo/repo.html", {
+            "files": files,
+            "dirs": dirs
+        })
+    except:
+        try:
+            f = File.objects.get(repo_id=r.id, path=path, branch=b)
+        except Exception as e:
+            print(e)
+            return HttpResponse("Not Found")
+        content = get_s3(f.url)
+        return render(request, "repo/file.html", {
+            "content": content.decode("utf-8")
+        })
 
 
+@csrf_exempt
 @login_required(login_url='/auth/login/')
-def upload(request, username, repo, url="/"):
+def upload(request, username, repo):
 
     try:
         b = request.GET["b"]
     except:
         b = "master"
+
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(name=repo, user_id=user.id)
 
     if request.method == "POST":
-        name = upload_s3(request)
-        r = Repository.objects.get(user_id=request.user.id, name=repo).id
-        if url == "/":
-            d = Directory.objects.get(repo_id=r, path="/", branch=b).id
-        else:
-            d = Directory.objects.get(repo_id=r, path="/" + url + "/", branch=b).id
-        f = File(repo_id=r, filename=request.FILES["file"].name, directory_id=d, url=name, branch=b)
-        f.save()
-        if url == "/":
-            return HttpResponseRedirect(f"/repo/{username}/{repo}/{request.FILES['file'].name}")
-        else:
-            return HttpResponseRedirect(f"/repo/{username}/{repo}/{url}/{request.FILES['file'].name}")
+        print(request.POST["path"])
+        # print(request.FILES["file"].name, request.POST["path"])
+        url = request.POST["path"][:-1].split("/")
+        print(url)
+        path = "/"
+        subdir = Directory.objects.get(repo_id=r.id, path="/").id
+        f_url = upload_s3(request)
+        for i in url:
+            print(i)
+            if i == "":
+                break
+            else:
+                print(colored(i, "yellow"))
+                path += f"{i}/"
+                try:
+                    print(colored(path, "red"))
+                    d = Directory.objects.get(repo_id=r.id, path=path)
+                except Directory.DoesNotExist:
+                    # print(colored(e, "blue"))
+                    Directory(repo_id=r.id, subdir=subdir, name=i, path=path, branch=b).save()
+                    print(colored(path, "blue"))
+                try:
+                    print(colored(path, "yellow"))
+                    subdir = Directory.objects.get(repo_id=r.id, path=path).id
+                except Exception as e:
+                    print(colored(e + Exception, "yellow"))
+
+        print(f_url)
+        File(repo_id=r.id, filename=request.FILES["file"].name, subdir=subdir, url=f_url, branch=b, path=path+request.FILES["file"].name+"/").save()
+
+        return HttpResponse(str(request.POST))
+
     else:
         return render(request, "repo/upload.html", {
             "repo": repo,
@@ -205,6 +182,7 @@ def delete(request):
 
     return HttpResponse(dir_path)
 
+
 def delete_folder(request):
     path = request.GET["path"]
 
@@ -227,4 +205,39 @@ def change_repo_visibility(request, username, repo):
         status = 1
     repo.status = status
     repo.save()
-    return HttpResponse(f"/repo/{username}/{repo.name}")
+    return HttpResponseRedirect(f"/repo/{username}/{repo.name}")
+
+
+def fork(request, username, repo):
+    # user = User.objects.get(username=username)
+    # r_org = Repository.objects.get(user_id=user.id, name=repo)
+    # dirs = Directory.objects.filter(repo_id=r_org.id)
+    # r = Repository(user_id=request.user.id, name=repo, description=r_org.description, status=r_org.status)
+    # r.save()
+    # dir_ids = {}
+    # r = Repository.objects.get(user_id=request.user.id, name=repo)
+    # for d in dirs:
+    #     # a = Directory(repo_id=r.id, dir_id=d.id, name=d.name, path=d.path, branch=)
+    #     try:
+    #         Directory(repo_id=r.id, dir_id=dir_ids[r.dir_id], name=d.name, path=d.path, branch=d.branch).save()
+    #     except KeyError:
+    #         Directory(repo_id=r_org.id, dir_id=)
+    #         pass
+    #     pass
+    # return HttpResponse(str(Directory.objects.filter(id=r.id)))
+    pass
+
+
+def change_name(request, username, repo):
+    u = User.objects.get(username=username)
+    r = Repository.objects.get(user_id=u.id, name=repo)
+    r.name = request.POST["name"]
+    r.save()
+    return HttpResponseRedirect(f"/repo/{username}/{request.POST['name']}")
+
+
+def star(request, username, repo):
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(name=repo)
+    Star(user_id=user.id, repo_id=r.id).save()
+    return HttpResponseRedirect(f"/repo/{username}/{repo}/")

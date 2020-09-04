@@ -78,7 +78,7 @@ def new(request):
         r = Repository(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status)
         r.save()
 
-        d = Directory(repo_id=Repository.objects.get(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status).id, name="/", dir_id=0, path="/", branch="master")
+        d = Directory(repo_id=Repository.objects.get(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status).id, name="/", subdir=0, path="/", branch="master")
         d.save()
 
         b = Branch(repo_id=Repository.objects.get(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status).id, name="master")

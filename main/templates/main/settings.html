@@ -20,10 +20,11 @@
             </div>
             <div class="col-8">
                 <h2>Settings</h2>
-                <form>
+                <form method="POST" action="/repo/change-name/{{ username }}/{{ repo }}/">
+                  {% csrf_token %}
                     <div class="form-group">
                         <label for="exampleInputEmail1">Repository Name</label>
-                        <input type="text" class="form-control" id="exampleInputEmail1" value="{{ repo }}">
+                        <input type="text" class="form-control" id="exampleInputEmail1" value="{{ repo }}" name="name">
                     </div>
                 </form>
                 <hr>
