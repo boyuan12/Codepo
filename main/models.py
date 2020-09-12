@@ -2,6 +2,8 @@
 from django.db import models
 from django.utils.timezone import now
 from django.contrib.postgres.fields import JSONField
+import uuid
+
 
 # Create your models here.
 class Repository(models.Model):
@@ -57,3 +59,40 @@ class Branch(models.Model):
 class Star(models.Model):
     user_id = models.IntegerField()
     repo_id = models.IntegerField()
+
+
+class Issue(models.Model):
+    issue_id = models.IntegerField()
+    user_id = models.IntegerField()
+    repo_id = models.IntegerField()
+    title = models.CharField(max_length=100)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
+    status = models.IntegerField(default=0) # 0: open, 1: closed
+
+
+class Tags(models.Model):
+    repo_id = models.IntegerField()
+    issue_id = models.IntegerField()
+    name = models.CharField(max_length=20)
+
+
+class Issue_Comment(models.Model):
+    repo_id = models.IntegerField()
+    issue_id = models.IntegerField()
+    user_id = models.IntegerField()
+    message = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
+    special = models.IntegerField(null=True, default=None) # 0: issue closed, 1: issue reopened
+
+
+class Commit(models.Model):
+    commit_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    repo_id = models.IntegerField()
+    message = models.CharField(max_length=100)
+    timestamp = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
+
+
+class Commit_File(models.Model):
+    commit_id = models.TextField()
+    file = models.ForeignKey('File', on_delete=models.CASCADE)

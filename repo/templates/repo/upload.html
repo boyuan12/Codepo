@@ -1,3 +1,4 @@
+
 {% extends "repo/base.html" %}
 
 {% block main %}
@@ -19,6 +20,7 @@
             border-radius: 20px;
         }
     </style>
+    <input type="text" name="" id="stuff">
     <div id="dropzone">
         <div style="text-align: center; margin-top: 50px;">
             <img src="https://github.githubassets.com/images/files-lg.svg"> <br> <br>
@@ -32,11 +34,16 @@
         dropzone.addEventListener("drop", function(e) {
             e.stopPropagation();
             e.preventDefault();
-            var items = event.dataTransfer.items;
-            for (var i = 0; i < items.length; i++) {
-                var entry = items[i].webkitGetAsEntry();
-                if (entry) {
-                    traverse(entry);
+            var commitMessage = document.getElementById("stuff").value
+            if (commitMessage == "") {
+                alert("You must fill out commit message before drag n' drop")
+            } else {
+                var items = event.dataTransfer.items;
+                for (var i = 0; i < items.length; i++) {
+                    var entry = items[i].webkitGetAsEntry();
+                    if (entry) {
+                        traverse(entry);
+                    }
                 }
             }
         }, false);
@@ -58,6 +65,10 @@
                         method: 'POST',
                         body: formData
                     })
+                    .then(response => response.json())
+                    .then(data => {
+                        console.log(data)
+                    })
                     var LI = document.createElement("LI")
                     LI.innerText = path + file.name
                     document.getElementById("files").appendChild(LI);
@@ -73,7 +84,6 @@
                 });
             }
         }
-        location.assign = "/repo/demo/demo/"
     </script>
     <!-- <script>
         function randomString(length) {

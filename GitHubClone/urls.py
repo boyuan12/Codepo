@@ -22,5 +22,6 @@ urlpatterns = [
     path("", include("main.urls")),
     path("repo/", include("repo.urls")),
     path("api/", include("api.urls")),
-    path("oauth/", include("oauth.urls"))
+    path("oauth/", include("oauth.urls")),
+    path("p/", include("pages.urls")),
 ]

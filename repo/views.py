@@ -19,7 +19,6 @@ import pathlib
 
 from termcolor import colored
 
-
 BASE_URL = "https://github-clone-dj.herokuapp.com"
 
 s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
@@ -36,7 +35,6 @@ def upload_s3(request):
     return f"{name}{pathlib.Path(request.FILES['file'].name).suffix}"
 
 def get_s3(name):
-    s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
     obj = s3.Object("githubclone", f"{name}")
     body = obj.get()['Body'].read()
     return body
@@ -73,9 +71,15 @@ def repo(request, username, repo, path="/"):
             print(e)
             return HttpResponse("Not Found")
         content = get_s3(f.url)
-        return render(request, "repo/file.html", {
-            "content": content.decode("utf-8")
-        })
+        try:
+            return render(request, "repo/file.html", {
+                "content": content.decode("utf-8")
+            })
+        except:
+            return render(request, "repo/file.html", {
+                "decode": False,
+                "url": f.url
+            })
 
 
 @csrf_exempt
@@ -91,10 +95,7 @@ def upload(request, username, repo):
     r = Repository.objects.get(name=repo, user_id=user.id)
 
     if request.method == "POST":
-        print(request.POST["path"])
-        # print(request.FILES["file"].name, request.POST["path"])
         url = request.POST["path"][:-1].split("/")
-        print(url)
         path = "/"
         subdir = Directory.objects.get(repo_id=r.id, path="/").id
         f_url = upload_s3(request)
@@ -103,25 +104,25 @@ def upload(request, username, repo):
             if i == "":
                 break
             else:
-                print(colored(i, "yellow"))
                 path += f"{i}/"
                 try:
-                    print(colored(path, "red"))
                     d = Directory.objects.get(repo_id=r.id, path=path)
+                    print(colored(path + " exist", "red"))
                 except Directory.DoesNotExist:
-                    # print(colored(e, "blue"))
                     Directory(repo_id=r.id, subdir=subdir, name=i, path=path, branch=b).save()
-                    print(colored(path, "blue"))
+                    print(colored(path + " doesn't exist.", "blue"))
                 try:
-                    print(colored(path, "yellow"))
                     subdir = Directory.objects.get(repo_id=r.id, path=path).id
+                    print(colored(path + " is the new subdir", "magenta"))
                 except Exception as e:
-                    print(colored(e + Exception, "yellow"))
+                    d = Directory.objects.filter(repo_id=r.id, path=path)
+                    d[::-1][0].delete()
+                    d = Directory.objects.get(repo_id=r.id, path=path)
+                    subdir = d.id
 
-        print(f_url)
         File(repo_id=r.id, filename=request.FILES["file"].name, subdir=subdir, url=f_url, branch=b, path=path+request.FILES["file"].name+"/").save()
 
-        return HttpResponse(str(request.POST))
+        return JsonResponse({"data": "success"})
 
     else:
         return render(request, "repo/upload.html", {

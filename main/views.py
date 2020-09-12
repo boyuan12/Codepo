@@ -4,7 +4,7 @@ import os
 import GitHubClone.settings as settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.admin import User
-from .models import Repository, File, Directory, Profile, Follows, Branch
+from .models import Repository, File, Directory, Profile, Follows, Branch, Issue, Tags, Issue_Comment
 from oauth.models import OAuth, Uri, Token
 
 import cloudinary
@@ -18,6 +18,7 @@ from termcolor import colored
 
 import boto3
 import pathlib
+from django.views.decorators.csrf import csrf_exempt
 
 cloudinary.config(
     cloud_name = "boyuan12",
@@ -253,4 +254,102 @@ def repo_settings(request, username, repo):
             "username": username,
             "repo": repo,
             "status": r.status
+        })
+
+
+@login_required(login_url="/auth/login/")
+def repo_issues(request, username, repo):
+    if request.method == "POST":
+        pass
+    else:
+        user = User.objects.get(username=username)
+        r = Repository.objects.get(name=repo, user_id=user.id)
+        issues = Issue.objects.filter(repo_id=r.id)
+        issue = []
+        for i in issues:
+            username = User.objects.get(id=i.user_id).username
+            tags = Tags.objects.filter(issue_id=i.id)
+            print(tags)
+            issue.append([i.id, i.title, (i.timestamp.year, i.timestamp.month, i.timestamp.day, i.timestamp.hour, i.timestamp.minute), username, [tag.name for tag in tags], i.issue_id, i.status])
+
+        return render(request, "main/issue.html", {
+            "issues": issue
+        })
+
+
+@login_required(login_url="/auth/login/")
+@csrf_exempt
+def repo_new_issue(request, username, repo):
+    if request.method == "POST":
+        user = User.objects.get(username=username)
+        repo = Repository.objects.get(user_id=user.id, name=repo)
+        issue_id = len(Issue.objects.filter(repo_id=repo.id))
+        Issue(issue_id=issue_id+1, user_id=request.user.id, repo_id=repo.id, title=request.POST["title"], content=request.POST["content"]).save()
+        issue = Issue.objects.get(issue_id=issue_id+1)
+        print(colored(str(request.POST)))
+        for t in request.POST.getlist("tags"):
+            # print(t)
+            Tags(repo_id=repo.id, issue_id=issue.id, name=t).save()
+        return HttpResponse("success")
+    else:
+        p = Profile.objects.get(user_id=User.objects.get(username=username).id)
+        return render(request, "main/new-issue.html", {
+            "avatar": p.avatar,
+            "username": username,
+            "repo": repo
+        })
+
+
+def view_issue(request, username, repo, issue_id):
+    if request.method == "POST":
+        try:
+            request.POST["delete"]
+            user = User.objects.get(username=username)
+            r = Repository.objects.get(user_id=user.id, name=repo)
+            i = Issue.objects.get(repo_id=r.id, user_id=user.id, issue_id=issue_id)
+            i.status = 1
+            i.save()
+            Issue_Comment(repo_id=r.id, issue_id=issue_id, user_id=request.user.id, message="Issue Closed", special=0).save()
+            return HttpResponseRedirect(f"/{username}/{repo}/issues/{issue_id}")
+        except Exception as e:
+            try:
+                request.POST["reopen"]
+                user = User.objects.get(username=username)
+                r = Repository.objects.get(user_id=user.id, name=repo)
+                i = Issue.objects.get(repo_id=r.id, user_id=user.id, issue_id=issue_id)
+                i.status = 0
+                i.save()
+                Issue_Comment(repo_id=r.id, issue_id=issue_id, user_id=request.user.id, message="Issue Reopened", special=1).save()
+            except Exception as e:
+                print(colored(str(e), "red"))
+                user = User.objects.get(username=username)
+                r = Repository.objects.get(user_id=user.id, name=repo)
+                comment = request.POST["comment"]
+                Issue_Comment(repo_id=r.id, issue_id=issue_id, user_id=request.user.id, message=comment).save()
+                return HttpResponseRedirect(f"/{username}/{repo}/issues/{issue_id}")
+    else:
+        user = User.objects.get(username=username)
+        repo = Repository.objects.get(name=repo, user_id=user.id)
+        issue = Issue.objects.get(issue_id=issue_id, repo_id=repo.id)
+        tags = Tags.objects.filter(issue_id=issue.id)
+        comments = Issue_Comment.objects.filter(repo_id=repo.id, issue_id=issue_id)
+        cs = []
+        for c in comments:
+            avatar = Profile.objects.get(user_id=c.user_id).avatar
+            username = User.objects.get(id=c.user_id).username
+            cs.append([avatar, c.repo_id, c.issue_id, c.message, (c.timestamp.year, c.timestamp.month, c.timestamp.day, c.timestamp.hour, c.timestamp.minute), c.id, username, c.special])
+
+        able_close_issue = "False"
+        if request.user.id == repo.user_id or request.user.id == issue.user_id:
+            able_close_issue = "True"
+
+        print(cs[len(cs)-1][7] == 0)
+
+        return render(request, "main/view-issue.html", {
+            "issue": issue,
+            "tags": tags,
+            "author_avatar": Profile.objects.get(user_id=user.id).avatar,
+            "comments": cs,
+            "able_close_issue": able_close_issue,
+            "issue_closed": cs[len(cs)-1][7] == 0
         })

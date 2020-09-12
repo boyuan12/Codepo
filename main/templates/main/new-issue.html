@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <!-- CSS only -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <!-- JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+    <style>
+        .triangle {
+            width: 0;
+            height: 0;
+            border-top: 5px solid white;
+            border-right: 10px solid #d1d5da;
+            border-bottom: 5px solid white;
+            position: absolute;
+            margin-left: -10px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Create a New Issue for {{ username }}/{{ repo }}</h1>
+        <div class="row">
+            <div class="col-1">
+                <img src="{{ avatar }}" width="50px" height="50px" style="border-radius: 50%">
+            </div>
+            <div class="col-9">
+                <div style="width: 80%; height: 500px; border: 1px solid #d1d5da; border-radius: 15px;">
+                    <div class="container">
+                        <form>
+                            <div class="form-group">
+                              <label for="title">Title</label>
+                              <input type="text" class="form-control" id="title">
+                            </div>
+                            <div class="form-group" id="md">
+                                <label for="exampleFormControlTextarea1">Description <button type="button" class="btn btn-link" onclick="mdPreview();" id="view">Preview</button>
+                                </label>
+                                <textarea class="form-control" id="content" cols="3" style="height: 200px; resize: none;"></textarea>
+                            </div>
+                            <div class="form-group form-check">
+                              <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                              <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                            </div>
+                            <button type="button" class="btn btn-primary" onclick="createNewIssue()">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <b>Labels</b>
+                <form id="tag">
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="bug" id="bug" name="tags">
+                        <label class="form-check-label" for="bug">
+                            <span class="badge badge-danger">Bugs</span>
+                        </label>
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" value="doc" id="doc" name="tags">
+                        <label class="form-check-label" for="doc">
+                            <span class="badge badge-primary">Documentation</span>
+                        </label>
+                    </div>
+                </form>
+
+                <!-- <div class="form-check">
+                    <input class="form-check-input" type="checkbox" value="" id="duplicate" name="tags">
+                    <label class="form-check-label" for="doc">
+                        <span class="badge badge-light">Light</span>
+                    </label>
+                </div> -->
+                <hr>
+            </div>
+        </div>
+    </div>
+    <script>
+        var content;
+        function mdPreview() {
+            var DIV = document.createElement("DIV");
+            content = document.getElementById("content").value;
+            DIV.innerHTML = marked(document.getElementById("content").value);
+            DIV.setAttribute("style", "height: 200px; overflow-y: auto;")
+            DIV.setAttribute("id", "preview")
+            document.getElementById("md").appendChild(DIV);
+            document.getElementById("content").remove()
+            document.getElementById("view").innerText = "Write"
+            document.getElementById("view").setAttribute("onclick", "mdWrite()")
+            // document.getElementById("content").value = marked(document.getElementById("content").value)
+        }
+
+        function mdWrite() {
+            document.getElementById("preview").remove();
+            var TEXTAREA = document.createElement("textarea");
+            TEXTAREA.innerText = content;
+            TEXTAREA.setAttribute("id", "content");
+            TEXTAREA.setAttribute("class", "form-control")
+            TEXTAREA.setAttribute("style", "height: 200px; resize: none;")
+            TEXTAREA.textContent = content
+            document.getElementById("md").appendChild(TEXTAREA);
+            document.getElementById("view").innerText = "Preview"
+            document.getElementById("view").setAttribute("onclick", "mdPreview()")
+        }
+
+        function createNewIssue() {
+            try {
+                mdWrite();
+            } catch {
+
+            }
+            var formData = new FormData();
+            formData.append("title", document.getElementById("title").value)
+            formData.append("content", document.getElementById("content").value)
+            var checkbox = $("#tag").find("input[type=checkbox]");
+            $.each(checkbox, function(key, val) {
+                if ($(val).is(':checked')) {
+                    formData.append("tags", $(val).attr('value'))
+                }
+            });
+            fetch(location.href, {
+                method: 'POST',
+                body: formData
+            })
+            window.location.reload();
+        }
+    </script>
+</body>
+</html> 

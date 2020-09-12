@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <!-- CSS only -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <!-- JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+
+</head>
+<body>
+
+    <div class="container">
+        <h1>{{ issue.title }} <span style="color: #6d7783">#{{ issue.issue_id }}</span></h1>
+        <div class="row">
+            <div class="col-1">
+                <img src="{{ author_avatar }}" width="50px" height="50px" style="border-radius: 50%">
+            </div>
+            <div class="col-9">
+                <div style="width: 80%; border: 1px solid #d1d5da; border-radius: 15px;">
+                    <div class="container">
+                        {{ issue.timestamp.year }}
+                    </div>
+                    <div class="container text">
+                        {{ issue.content }}
+                    </div>
+                </div>
+            </div>
+            <div class="col-2">
+                <b>Labels</b>
+                <form id="tag">
+                    {% for tag in tags %}
+                        {% if tag.name == "bug" %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="bug" id="bug" name="tags" checked disabled>
+                                <label class="form-check-label" for="bug">
+                                    <span class="badge badge-danger">Bugs</span>
+                                </label>
+                            </div>
+                        {% elif tag.name == "doc" %}
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="doc" id="doc" name="tags" checked disabled>
+                                <label class="form-check-label" for="doc">
+                                    <span class="badge badge-primary">Documentation</span>
+                                </label>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+
+
+                </form>
+                <hr>
+            </div>
+        </div>
+        {% for c in comments %}
+            <div class="row">
+                <div class="col-1">
+                    <img src="{{ c.0 }}" width="50px" height="50px" style="border-radius: 50%">
+                </div>
+                <div class="col-9">
+                    <div style="width: 80%; border: 1px solid #d1d5da; border-radius: 15px;">
+                        <div class="container">
+                            <small id="{{ c.5 }}"></small>
+                            <hr>
+                        </div>
+                        {% if c.7 == 0 %}
+                            <div class="container">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="40" height="40"><path d="M2.5 12c0-5.24 4.288-9.5 9.593-9.5a9.608 9.608 0 017.197 3.219.75.75 0 001.12-.998A11.108 11.108 0 0012.093 1C5.973 1 1 5.919 1 12s4.973 11 11.093 11c5.403 0 9.91-3.832 10.893-8.915a.75.75 0 10-1.472-.285c-.848 4.381-4.74 7.7-9.421 7.7C6.788 21.5 2.5 17.24 2.5 12z"></path><path d="M12 17a1 1 0 100-2 1 1 0 000 2zm0-10a.75.75 0 01.75.75v4.5a.75.75 0 01-1.5 0v-4.5A.75.75 0 0112 7zm11.28.78a.75.75 0 00-1.06-1.06l-3.47 3.47-1.47-1.47a.75.75 0 10-1.06 1.06l2 2a.75.75 0 001.06 0l4-4z"></path></svg><span style="font-size: 40px;">Issue Closed</span>
+                            </div>
+                        {% elif c.7 == 1 %}
+                            <div class="container">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="40" height="40"><path fill-rule="evenodd" d="M8 1.5a6.491 6.491 0 00-5.285 2.715l1.358 1.358A.25.25 0 013.896 6H.25A.25.25 0 010 5.75V2.104a.25.25 0 01.427-.177l1.216 1.216a8 8 0 0114.315 4.03.748.748 0 01-.668.83.75.75 0 01-.824-.676A6.501 6.501 0 008 1.5zM.712 8.004a.75.75 0 01.822.67 6.501 6.501 0 0011.751 3.111l-1.358-1.358a.25.25 0 01.177-.427h3.646a.25.25 0 01.25.25v3.646a.25.25 0 01-.427.177l-1.216-1.216A8 8 0 01.042 8.827a.75.75 0 01.67-.823zM9 11a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z"></path></svg><span style="font-size: 40px;">Issue Reopened</span>
+                            </div>
+                        {% else %}
+                            <div class="container text">
+                                {{ c.3 }}
+                            </div>
+                        {% endif %}
+
+                    </div>
+                </div>
+            </div>
+            <br> <br>
+            <script>
+                var yyyy = "{{ c.4.0 }}"
+                var mm = String("{{ c.4.1 }}".padStart(2, '0'))
+                var dd = String("{{ c.4.2 }}".padStart(2, '0'))
+                var hh = String("{{ c.4.3 }}".padStart(2, '0'))
+                var min = String("{{ c.4.4 }}".padStart(2, '0'))
+                console.log(yyyy, mm, dd, hh, mm)
+                var date = new Date(`${yyyy}-${mm}-${dd} ${hh}:${min} UTC`);
+                if ("{{ c.7 }}" == 0) {
+                    document.getElementById("{{ c.5 }}").innerHTML = `<b>{{ c.6 }}</b> closed this issue on ${String(date.getFullYear()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+                } else {
+                    document.getElementById("{{ c.5 }}").innerHTML = `<b>{{ c.6 }}</b> commented on ${String(date.getFullYear()).padStart(2, '0')}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}`
+                }
+            </script>
+        {% endfor %}
+        <div class="row">
+            <div class="col-1">
+                <img src="{{ request.session.img }}" alt="" width="50px" height="50px" style="border-radius: 50%">
+            </div>
+            <div class="col-9">
+                <div style="width: 80%; border: 1px solid #d1d5da; border-radius: 15px;">
+                    <div class="container">
+                        <form method="POST">
+                            {% csrf_token %}
+                            {% if able_close_issue == "True" and issue_closed == False %}
+                                <div class="form-group">
+                                    <label for="comment">Comment (Markdown is ok)</label>
+                                    <textarea class="form-control" id="comment" name="comment"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Comment</button>
+                            </form>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="delete" value="delete">
+                                    <button type="submit" class="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" style="fill: darkred;"><path fill-rule="evenodd" d="M1.5 8a6.5 6.5 0 0110.65-5.003.75.75 0 00.959-1.153 8 8 0 102.592 8.33.75.75 0 10-1.444-.407A6.5 6.5 0 011.5 8zM8 12a1 1 0 100-2 1 1 0 000 2zm0-8a.75.75 0 01.75.75v3.5a.75.75 0 11-1.5 0v-3.5A.75.75 0 018 4zm4.78 4.28l3-3a.75.75 0 00-1.06-1.06l-2.47 2.47-.97-.97a.749.749 0 10-1.06 1.06l1.5 1.5a.75.75 0 001.06 0z"></path></svg>Close Issue</button>
+                                </form>
+                            {% elif able_close_issue == "True" and issue_closed == True %}
+                                <div class="form-group">
+                                    <label for="comment">Comment (Markdown is ok)</label>
+                                    <textarea class="form-control" id="comment" name="comment" disabled></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary" disabled>Comment</button>
+                                <form method="POST">
+                                    {% csrf_token %}
+                                    <input type="hidden" name="reopen" value="reopen">
+                                    <button type="submit" class="btn btn-light"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16" style="fill: darkred;"><path fill-rule="evenodd" d="M1.5 8a6.5 6.5 0 0110.65-5.003.75.75 0 00.959-1.153 8 8 0 102.592 8.33.75.75 0 10-1.444-.407A6.5 6.5 0 011.5 8zM8 12a1 1 0 100-2 1 1 0 000 2zm0-8a.75.75 0 01.75.75v3.5a.75.75 0 11-1.5 0v-3.5A.75.75 0 018 4zm4.78 4.28l3-3a.75.75 0 00-1.06-1.06l-2.47 2.47-.97-.97a.749.749 0 10-1.06 1.06l1.5 1.5a.75.75 0 001.06 0z"></path></svg>Reopen Issue</button>
+                                </form>
+                            {% elif able_close_issue == "False" and issue_closed == True %}
+                                <div class="form-group">
+                                    <label for="comment">Comment (Markdown is ok)</label>
+                                    <textarea class="form-control" id="comment" name="comment" disabled></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary" disabled>Comment</button>
+                            {% elif able_close_issue == "False" and issue_closed == False %}
+                                <div class="form-group">
+                                    <label for="comment">Comment (Markdown is ok)</label>
+                                    <textarea class="form-control" id="comment" name="comment"></textarea>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Comment</button>
+                            {% endif %}
+                            <br><br>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var ms = document.getElementsByClassName("text");
+        for (let i=0; i<ms.length; i++) {
+            ms[i].innerHTML = marked(ms[i].innerText)
+        }
+
+        console.log("{{ cs.4.0 }}", "{{ i.4.1 }}", "{{ i.2.2 }}", "{{ i.2.3 }}", "{{ i.2.4 }}")
+
+
+    </script>
+</body>
+</html>

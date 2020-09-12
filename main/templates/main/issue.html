@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings</title>
+    <!-- CSS only -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" integrity="sha384-JcKb8q3iqJ61gNV9KGb8thSsNjpSL0n8PARn9HuZOnIxN0hoP+VmmDGMN5t9UJ0Z" crossorigin="anonymous">
+
+    <!-- JS, Popper.js, and jQuery -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js" integrity="sha384-DfXdz2htPH0lsSSs5nCTpuj/zy4C+OGpamoFVy38MVBnE+IbbVYUew+OrCXaRkfj" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.16.1/dist/umd/popper.min.js" integrity="sha384-9/reFTGAW83EW2RDu2S0VKaIzap3H66lZH81PoYlFhbGU+6BZp6G7niu735Sk7lN" crossorigin="anonymous"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js" integrity="sha384-B4gt1jrGC7Jh4AgTPSdUtOBvfO8shuf57BaghqFfPlYxofvL8/KUEfYiJOMMV+rV" crossorigin="anonymous"></script>
+</head>
+<body>
+    <div class="container">
+        <button type="button" class="btn btn-success" id="new-issue">New Issue</button> <br> <br>
+        <table class="table">
+            <tbody>
+                {% for i in issues %}
+                    <tr>
+                        <td onclick="window.location.assign('{{ i.5 }}')">
+                            {% if i.6 == 0 %}
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M8 1.5a6.5 6.5 0 100 13 6.5 6.5 0 000-13zM0 8a8 8 0 1116 0A8 8 0 010 8zm9 3a1 1 0 11-2 0 1 1 0 012 0zm-.25-6.25a.75.75 0 00-1.5 0v3.5a.75.75 0 001.5 0v-3.5z" style="fill: green;"></path></svg>
+                            {% else %}
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M1.5 8a6.5 6.5 0 0110.65-5.003.75.75 0 00.959-1.153 8 8 0 102.592 8.33.75.75 0 10-1.444-.407A6.5 6.5 0 011.5 8zM8 12a1 1 0 100-2 1 1 0 000 2zm0-8a.75.75 0 01.75.75v3.5a.75.75 0 11-1.5 0v-3.5A.75.75 0 018 4zm4.78 4.28l3-3a.75.75 0 00-1.06-1.06l-2.47 2.47-.97-.97a.749.749 0 10-1.06 1.06l1.5 1.5a.75.75 0 001.06 0z"></path></svg>
+                            {% endif %}
+                            {{ i.1 }} <br> <small id="{{ i.0 }}"></small>
+                        </td>
+                    </tr>
+                    <script>
+                        console.log("{{ i.2.0 }}", "{{ i.2.1 }}", "{{ i.2.2 }}", "{{ i.2.3 }}", "{{ i.2.4 }}")
+                        var yyyy = "{{ i.2.0 }}"
+                        var mm = String("{{ i.2.1 }}".padStart(2, '0'))
+                        var dd = String("{{ i.2.2 }}".padStart(2, '0'))
+                        var hh = String("{{ i.2.3 }}".padStart(2, '0'))
+                        var min = String("{{ i.2.4 }}".padStart(2, '0'))
+                        console.log(yyyy, mm, dd, hh, mm)
+                        var date = new Date(`${yyyy}-${mm}-${dd} ${hh}:${min} UTC`);
+                        document.getElementById("{{ i.0 }}").innerText = `#{{ i.5 }} opened by {{ i.3 }} on ${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()} ${date.getHours()}:${date.getMinutes()}`
+                    </script>
+                {% endfor %}
+            </tbody>
+          </table>
+
+        <script>
+            document.getElementById("new-issue").setAttribute("onclick", `location.assign('${location.pathname}/new/')`)
+        </script>
+    </div>
+</body>
+</html>

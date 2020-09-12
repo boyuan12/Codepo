@@ -1,11 +1,22 @@
+
 from django.shortcuts import render
 from main.models import Repository, Directory, File
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from main.models import Repository, Directory, File
+from main.models import Repository, Directory, File, Commit
 from django.contrib.auth.models import User
 
 from termcolor import colored
+
+import random
+from string import ascii_letters, digits
+
+def random_str(n=150):
+    string = ""
+    for i in range(n):
+        string += random.choice(ascii_letters + digits)
+    return string
+
 
 # Create your views here.
 def get_structure(request):
@@ -184,6 +195,14 @@ def repos(request):
     else:
         return JsonResponse({"message": "Can't access other HTTP request than GET on this route."})
 
-
 def sentry_webhook(request):
     print(request.POST)
+
+
+def gen_commit_id(request):
+    if request.method == "POST":
+        user = User.objects.get(username=request.POST["username"])
+        r = Repository.objects.get(name=request.POST["repo_name"], user_od=user.id)
+        Commit(repo_id=r.id, message=request.POST["message"]).save()
+        commit_id = Commit.objects.all()[::-1][0].commit_id
+        return JsonResponse({"commit_id": commit_id})
