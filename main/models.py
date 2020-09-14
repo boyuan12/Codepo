@@ -1,4 +1,3 @@
-
 from django.db import models
 from django.utils.timezone import now
 from django.contrib.postgres.fields import JSONField
@@ -87,12 +86,13 @@ class Issue_Comment(models.Model):
 
 
 class Commit(models.Model):
-    commit_id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    commit_id = models.CharField(primary_key=True, max_length=100)
     repo_id = models.IntegerField()
+    user_id = models.IntegerField()
     message = models.CharField(max_length=100)
     timestamp = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
 
 
 class Commit_File(models.Model):
     commit_id = models.TextField()
-    file = models.ForeignKey('File', on_delete=models.CASCADE)
+    file = models.IntegerField()

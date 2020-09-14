@@ -9,5 +9,6 @@ urlpatterns = [
     path("add-file/", views.add_file),
     path("delete-file/", views.delete_file),
     path("repos/", views.repos),
-    path("sentry/", views.sentry_webhook)
+    path("sentry/", views.sentry_webhook),
+    path("gen-commit/", views.gen_commit_id),
 ]

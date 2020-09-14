@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 from main.models import Repository, Directory, File
 from django.http import HttpResponse, JsonResponse
@@ -199,10 +198,12 @@ def sentry_webhook(request):
     print(request.POST)
 
 
+@csrf_exempt
 def gen_commit_id(request):
     if request.method == "POST":
-        user = User.objects.get(username=request.POST["username"])
-        r = Repository.objects.get(name=request.POST["repo_name"], user_od=user.id)
+        print(request)
+        user = User.objects.get(username=request.user.username)
+        r = Repository.objects.get(name=request.POST["repo"], user_id=user.id)
         Commit(repo_id=r.id, message=request.POST["message"]).save()
         commit_id = Commit.objects.all()[::-1][0].commit_id
         return JsonResponse({"commit_id": commit_id})

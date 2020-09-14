@@ -1,4 +1,3 @@
-
 {% extends "repo/base.html" %}
 
 {% block main %}
@@ -20,7 +19,7 @@
             border-radius: 20px;
         }
     </style>
-    <input type="text" name="" id="stuff">
+    <textarea name="" id="message" cols="10" rows="5" class="form-control"></textarea>
     <div id="dropzone">
         <div style="text-align: center; margin-top: 50px;">
             <img src="https://github.githubassets.com/images/files-lg.svg"> <br> <br>
@@ -34,7 +33,7 @@
         dropzone.addEventListener("drop", function(e) {
             e.stopPropagation();
             e.preventDefault();
-            var commitMessage = document.getElementById("stuff").value
+            var commitMessage = document.getElementById("message").value
             if (commitMessage == "") {
                 alert("You must fill out commit message before drag n' drop")
             } else {
@@ -61,6 +60,8 @@
                     const formData = new FormData()
                     formData.append("file", file)
                     formData.append("path", path)
+                    formData.append("commit_id", "{{ commit_id }}")
+                    formData.append("message", document.getElementById("message").value)
                     fetch(`/repo/${location.pathname.split("/")[2]}/${location.pathname.split("/")[3]}/upload/`, {
                         method: 'POST',
                         body: formData

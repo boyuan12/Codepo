@@ -4,7 +4,9 @@ import os
 import GitHubClone.settings as settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.admin import User
-from .models import Repository, File, Directory, Profile, Follows, Branch, Issue, Tags, Issue_Comment
+from .models import Repository, File, Directory, Profile, Follows, Branch, Issue, Tags, Issue_Comment, Commit, Commit_File, Profile
+from repo.views import get_s3
+
 from oauth.models import OAuth, Uri, Token
 
 import cloudinary
@@ -42,6 +44,11 @@ def random_str(n):
     for i in range(n):
         s += random.choice(string.ascii_letters + string.digits)
     return s
+
+def validate_date(s):
+    if len(str(s)) == 1:
+        return "0" + str(s)
+    return str(s)
 
 def validate_url(url):
     # https://stackoverflow.com/questions/7160737/python-how-to-validate-a-url-in-python-malformed-or-not
@@ -353,3 +360,33 @@ def view_issue(request, username, repo, issue_id):
             "able_close_issue": able_close_issue,
             "issue_closed": cs[len(cs)-1][7] == 0
         })
+
+
+def view_all_commits(request, username, repo):
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(user_id=user.id, name=repo)
+    commits = Commit.objects.filter(repo_id=r.id)[::-1]
+    data = []
+    for c in commits:
+        u = User.objects.get(id=c.user_id)
+        p = Profile.objects.get(user_id=u.id)
+        data.append([c.commit_id, u.username, p.avatar, c.message, validate_date(c.timestamp.year), validate_date(c.timestamp.month), validate_date(c.timestamp.day), c.timestamp])
+    return render(request, "main/commits.html", {
+        "data": data
+    })
+
+
+def view_single_commit(request, username, repo, commit_id):
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(user_id=user.id, name=repo)
+    files = Commit_File.objects.filter(commit_id=commit_id)
+    data = []
+    for f in files:
+        file = File.objects.get(pk=f.file)
+        try:
+            data.append([file.path, get_s3(file.url).decode("utf-8")])
+        except:
+            data.append([file.path, file.url, "undecodeable"])
+    return render(request, "main/commit.html", {
+        "data": data
+    })

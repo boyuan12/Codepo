@@ -7,7 +7,7 @@ from django.core.files.storage import FileSystemStorage
 
 import os
 
-from main.models import Repository, Directory, File, Branch, Star
+from main.models import Repository, Directory, File, Branch, Star, Commit, Commit_File
 import requests
 
 from GitHubClone.settings import DEBUG
@@ -18,6 +18,7 @@ import string
 import pathlib
 
 from termcolor import colored
+import uuid
 
 BASE_URL = "https://github-clone-dj.herokuapp.com"
 
@@ -50,6 +51,7 @@ def repo(request, username, repo, path="/"):
 
     user = User.objects.get(username=username)
     r = Repository.objects.get(name=repo, user_id=user.id)
+    branches = Branch.objects.filter(repo_id=r.id)
 
     if "/" not in path or path != "/":
         path = "/" + path + "/"
@@ -62,7 +64,11 @@ def repo(request, username, repo, path="/"):
         files = File.objects.filter(repo_id=r.id, subdir=d.id, branch=b)
         return render(request, "repo/repo.html", {
             "files": files,
-            "dirs": dirs
+            "dirs": dirs,
+            "branches": branches,
+            "b": b,
+            "repo": repo,
+            "username": username
         })
     except:
         try:
@@ -73,12 +79,16 @@ def repo(request, username, repo, path="/"):
         content = get_s3(f.url)
         try:
             return render(request, "repo/file.html", {
-                "content": content.decode("utf-8")
+                "content": content.decode("utf-8"),
+                "repo": repo,
+                "username": username
             })
         except:
             return render(request, "repo/file.html", {
                 "decode": False,
-                "url": f.url
+                "url": f.url,
+                "repo": repo,
+                "username": username
             })
 
 
@@ -122,12 +132,22 @@ def upload(request, username, repo):
 
         File(repo_id=r.id, filename=request.FILES["file"].name, subdir=subdir, url=f_url, branch=b, path=path+request.FILES["file"].name+"/").save()
 
+        try:
+            c = Commit.objects.get(commit_id=request.POST["commit_id"])
+        except:
+            Commit(commit_id=request.POST["commit_id"], repo_id=r.id, user_id=request.user.id, message=request.POST["message"]).save()
+            c = Commit.objects.get(commit_id=request.POST["commit_id"])
+
+        f = File.objects.get(repo_id=r.id, filename=request.FILES["file"].name, subdir=subdir, url=f_url, branch=b, path=path+request.FILES["file"].name+"/")
+        Commit_File(commit_id=c.commit_id, file=f.id).save()
+
         return JsonResponse({"data": "success"})
 
     else:
         return render(request, "repo/upload.html", {
             "repo": repo,
-            "username": username
+            "username": username,
+            "commit_id": str(uuid.uuid4()),
         })
 
 

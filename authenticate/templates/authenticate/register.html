@@ -1,9 +1,10 @@
 {% extends "authenticate/base.html" %}
 
 {% block main %}
+    <script src="https://www.google.com/recaptcha/api.js"></script>
     <div class="container">
         <h1>Register</h1>
-        <form method="POST">
+        <form method="POST" id="sign-up-form">
             {% csrf_token %}
             <div class="form-group">
                 <label for="f_name">First name</label>
@@ -34,7 +35,18 @@
               <input type="checkbox" class="form-check-input" id="exampleCheck1">
               <label class="form-check-label" for="exampleCheck1">You read and agree our Privacy Policy & Term of Use</label>
             </div>
-            <button type="submit" class="btn btn-primary">Submit</button>
+            <button class="g-recaptcha btn btn-primary"
+                    data-sitekey="6LcCi8sZAAAAAKAK-IyR6m4se4DKcD0r9XyAuRFN"
+                    data-callback='onSubmit'
+                    data-action='submit'
+                    id="submit-button"
+            >Submit</button>
         </form>
     </div>
+    <script>
+        function onSubmit(token) {
+            console.log(token)
+          // document.getElementById("sign-up-form").submit();
+        }
+    </script>
 {% endblock %}
