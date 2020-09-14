@@ -13,7 +13,7 @@
             {{ d.0 }} <br>
             <div style="border: 3px solid black">
                 {% if d.2 == "undecodeable" %}
-                    <a href="{{ d.1 }}" style="margin-left: 45%">Download Raw</a>
+                    <a href="https://githubclone.s3-us-west-1.amazonaws.com/{{ d.1 }}" style="margin-left: 45%">Download Raw</a>
                 {% else %}
                     <pre><code class="hljs">{{ d.1 }}</code></pre>
                 {% endif %}

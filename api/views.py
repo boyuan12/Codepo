@@ -207,3 +207,13 @@ def gen_commit_id(request):
         Commit(repo_id=r.id, message=request.POST["message"]).save()
         commit_id = Commit.objects.all()[::-1][0].commit_id
         return JsonResponse({"commit_id": commit_id})
+
+
+@csrf_exempt
+def repo_already_exist(request):
+    if request.method == "POST":
+        try:
+            r = Repository.objects.get(user_id=request.user.id, name=request.POST["name"])
+            return JsonResponse({"exist": True})
+        except:
+            return JsonResponse({"exist": False})

@@ -83,6 +83,12 @@ def new(request):
         else:
             status = 1
 
+        try:
+            Repository.objects.get(user_id=request.user.id, name=request.POST["name"])
+            return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['name']}")
+        except:
+            pass
+
         r = Repository(user_id=request.user.id, name=request.POST["name"], description=request.POST["description"], status=status)
         r.save()
 
