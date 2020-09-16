@@ -353,16 +353,27 @@ def view_issue(request, username, repo, issue_id):
         if request.user.id == repo.user_id or request.user.id == issue.user_id:
             able_close_issue = "True"
 
-        print(cs[len(cs)-1][7] == 0)
+        print(colored(cs, "red"))
+        # print(cs[len(cs)-1][7] == 0)
 
-        return render(request, "main/view-issue.html", {
-            "issue": issue,
-            "tags": tags,
-            "author_avatar": Profile.objects.get(user_id=user.id).avatar,
-            "comments": cs,
-            "able_close_issue": able_close_issue,
-            "issue_closed": cs[len(cs)-1][7] == 0
-        })
+        if len(cs) == 0:
+            return render(request, "main/view-issue.html", {
+                "issue": issue,
+                "tags": tags,
+                "author_avatar": Profile.objects.get(user_id=user.id).avatar,
+                "comments": cs,
+                "able_close_issue": able_close_issue,
+                "issue_closed": 0
+            })
+        else:
+            return render(request, "main/view-issue.html", {
+                "issue": issue,
+                "tags": tags,
+                "author_avatar": Profile.objects.get(user_id=user.id).avatar,
+                "comments": cs,
+                "able_close_issue": able_close_issue,
+                "issue_closed": cs[len(cs)-1][7] == 0
+            })
 
 
 def view_all_commits(request, username, repo):
