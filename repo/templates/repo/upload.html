@@ -1,3 +1,4 @@
+
 {% extends "repo/base.html" %}
 
 {% block main %}
@@ -62,14 +63,21 @@
                     formData.append("path", path)
                     formData.append("commit_id", "{{ commit_id }}")
                     formData.append("message", document.getElementById("message").value)
-                    fetch(`/repo/${location.pathname.split("/")[2]}/${location.pathname.split("/")[3]}/upload/`, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        console.log(data)
-                    })
+                    if (location.search !== "") {
+                        fetch(`/repo/${location.pathname.split("/")[2]}/${location.pathname.split("/")[3]}/upload/?b=${location.search.split("?b=")[1]}`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                    } else {
+                        fetch(`/repo/${location.pathname.split("/")[2]}/${location.pathname.split("/")[3]}/upload/`, {
+                            method: 'POST',
+                            body: formData
+                        })
+                    }
+                    // .then(response => response.json())
+                    // .then(data => {
+                    //     console.log(data)
+                    // })
                     var LI = document.createElement("LI")
                     LI.innerText = path + file.name
                     document.getElementById("files").appendChild(LI);

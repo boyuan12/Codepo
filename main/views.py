@@ -6,21 +6,18 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.admin import User
 from .models import Repository, File, Directory, Profile, Follows, Branch, Issue, Tags, Issue_Comment, Commit, Commit_File, Profile
 from repo.views import get_s3
-
 from oauth.models import OAuth, Uri, Token
-
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-
 import requests
 import random
 import string
 from termcolor import colored
-
 import boto3
 import pathlib
 from django.views.decorators.csrf import csrf_exempt
+
 
 cloudinary.config(
     cloud_name = "boyuan12",
@@ -250,7 +247,7 @@ def create_new_branch(request):
         r = Repository.objects.get(user_id=request.user.id, name=r)
         b = Branch(repo_id=r.id, name=b)
         b.save()
-        d = Directory(repo_id=r.id, dir_id=0, name="/", path="/", branch=request.POST["name"])
+        d = Directory(repo_id=r.id, subdir=0, name="/", path="/", branch=request.POST["name"])
         d.save()
 
         return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['repo']}/?b={request.POST['name']}")
@@ -369,9 +366,15 @@ def view_issue(request, username, repo, issue_id):
 
 
 def view_all_commits(request, username, repo):
+
+    try:
+        b = request.GET["b"]
+    except:
+        b = "master"
+
     user = User.objects.get(username=username)
     r = Repository.objects.get(user_id=user.id, name=repo)
-    commits = Commit.objects.filter(repo_id=r.id)[::-1]
+    commits = Commit.objects.filter(repo_id=r.id, branch=b)[::-1]
     data = []
     for c in commits:
         u = User.objects.get(id=c.user_id)

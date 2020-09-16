@@ -90,6 +90,7 @@ class Commit(models.Model):
     repo_id = models.IntegerField()
     user_id = models.IntegerField()
     message = models.CharField(max_length=100)
+    branch = models.CharField(max_length=20, default="master")
     timestamp = models.DateTimeField(auto_now_add=True, editable=False, null=False, blank=False)
 
 

@@ -107,7 +107,7 @@ def upload(request, username, repo):
     if request.method == "POST":
         url = request.POST["path"][:-1].split("/")
         path = "/"
-        subdir = Directory.objects.get(repo_id=r.id, path="/").id
+        subdir = Directory.objects.get(repo_id=r.id, path="/", branch=b).id
         f_url = upload_s3(request)
         for i in url:
             print(i)
@@ -116,27 +116,27 @@ def upload(request, username, repo):
             else:
                 path += f"{i}/"
                 try:
-                    d = Directory.objects.get(repo_id=r.id, path=path)
+                    d = Directory.objects.get(repo_id=r.id, path=path, branch=b)
                     print(colored(path + " exist", "red"))
                 except Directory.DoesNotExist:
                     Directory(repo_id=r.id, subdir=subdir, name=i, path=path, branch=b).save()
                     print(colored(path + " doesn't exist.", "blue"))
                 try:
-                    subdir = Directory.objects.get(repo_id=r.id, path=path).id
+                    subdir = Directory.objects.get(repo_id=r.id, path=path, branch=b).id
                     print(colored(path + " is the new subdir", "magenta"))
                 except Exception as e:
-                    d = Directory.objects.filter(repo_id=r.id, path=path)
+                    d = Directory.objects.filter(repo_id=r.id, path=path, branch=b)
                     d[::-1][0].delete()
-                    d = Directory.objects.get(repo_id=r.id, path=path)
+                    d = Directory.objects.get(repo_id=r.id, path=path, branch=b)
                     subdir = d.id
 
         File(repo_id=r.id, filename=request.FILES["file"].name, subdir=subdir, url=f_url, branch=b, path=path+request.FILES["file"].name+"/").save()
 
         try:
-            c = Commit.objects.get(commit_id=request.POST["commit_id"])
+            c = Commit.objects.get(commit_id=request.POST["commit_id"], branch=b)
         except:
-            Commit(commit_id=request.POST["commit_id"], repo_id=r.id, user_id=request.user.id, message=request.POST["message"]).save()
-            c = Commit.objects.get(commit_id=request.POST["commit_id"])
+            Commit(commit_id=request.POST["commit_id"], repo_id=r.id, user_id=request.user.id, message=request.POST["message"], branch=b).save()
+            c = Commit.objects.get(commit_id=request.POST["commit_id"], branch=b)
 
         f = File.objects.get(repo_id=r.id, filename=request.FILES["file"].name, subdir=subdir, url=f_url, branch=b, path=path+request.FILES["file"].name+"/")
         Commit_File(commit_id=c.commit_id, file=f.id).save()
