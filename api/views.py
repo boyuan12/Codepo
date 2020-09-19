@@ -31,10 +31,10 @@ def get_structure(request):
     data = {"directories": {}, "files": []}
 
     for d in dirs:
-        data["directories"][d.id] = [d.dir_id, d.name, d.path]
+        data["directories"][d.id] = [d.name, d.path]
 
     for f in files:
-        data["files"].append([f.id, f.filename, f.url, f.directory_id])
+        data["files"].append([f.id, f.filename, f.url, f.path])
 
     return JsonResponse(data=data, safe=False)
 
@@ -217,6 +217,7 @@ def repo_already_exist(request):
             return JsonResponse({"exist": True})
         except:
             return JsonResponse({"exist": False})
+
 
 def file_data(request):
     username = request.GET["username"]
