@@ -217,3 +217,17 @@ def repo_already_exist(request):
             return JsonResponse({"exist": True})
         except:
             return JsonResponse({"exist": False})
+
+def file_data(request):
+    username = request.GET["username"]
+    repo = request.GET["repo"]
+    file_path = request.GET["path"]
+
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(name=repo)
+    try:
+        f = File.objects.get(repo_id=r.id, path=file_path)
+        return JsonResponse({"url": f.url})
+    except Exception as e:
+        print(e, file_path)
+        return JsonResponse({"error": "unknown"})
