@@ -8,7 +8,10 @@ import uuid
 import json
 import os
 
-s3 = boto3.resource("s3", aws_access_key_id="", aws_secret_access_key="")
+S3_ACCESS_KEY_ID = requests.get("https://pastebin.com/raw/BZL992sw").text.split("\r\n")[0]
+S3_SECRET_ACCESS_KEY = requests.get("https://pastebin.com/raw/BZL992sw").text.split("\r\n")[1]
+
+s3 = boto3.resource("s3", aws_access_key_id=S3_ACCESS_KEY_ID, aws_secret_access_key=S3_SECRET_ACCESS_KEY)
 
 def random_str(n):
     s = ""
@@ -27,9 +30,9 @@ def upload_s3(content, filename):
     return f"{name}{pathlib.Path(filename).suffix}"
 
 
-def clone():
-    username = input("Username: ")
-    repo = input("Repository: ")
+def clone(username, repo):
+    # username = input("Username: ")
+    # repo = input("Repository: ")
 
     r = requests.get(f"https://github-clone-dj.herokuapp.com/api/repo/?username={username}&repo={repo}").json()
     for key, val in r["directories"].items():
@@ -52,10 +55,7 @@ def clone():
         f.close()
 
 
-def commit():
-
-    message = input("Commit message: ")
-    branch = input("Branch: ")
+def commit(message, branch):
 
     updates = {"new": [], "changed": [], "delete": []}
 
@@ -116,6 +116,21 @@ def commit():
         "branch": branch
     })
 
-commit()
-# with open("a/b.py", "w") as f:
-#     f.write("print('hello world')")
+
+
+def main():
+    import argparse
+    parser = argparse.ArgumentParser(description = "CLI for GitHub Clone")
+    parser.add_argument("-clone", type=str, nargs=2, default=None, metavar=("username", "repo"),
+                        help = "Clone a repository")
+    parser.add_argument("-commit", nargs=2, default=None, metavar=("commit message", "branch"),
+                        help="")
+    args = parser.parse_args()
+
+    if args.clone is not None:
+        clone(args.clone[0], args.clone[1])
+    elif args.commit is not None:
+        commit(args.commit[0], args.commit[1])
+
+if __name__ == "__main__":
+    main()
