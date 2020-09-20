@@ -2,13 +2,47 @@ from django.shortcuts import render
 from main.models import Repository, Directory, File
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from main.models import Repository, Directory, File, Commit
+from main.models import Repository, Directory, File, Commit, Commit_File
 from django.contrib.auth.models import User
 
 from termcolor import colored
 
 import random
 from string import ascii_letters, digits
+import json
+import os
+import pathlib
+
+def upload(r, b, url):
+    """
+        r: Repository object
+        b: Branch name
+        url: pure folder path for the file
+        return subdir id
+    """
+    path = "/"
+    subdir = Directory.objects.get(repo_id=r.id, path="/", branch=b).id
+    url = url.split("/")
+    for i in url:
+        if i == "":
+            break
+        else:
+            path += f"{i}/"
+            try:
+                d = Directory.objects.get(repo_id=r.id, path=path, branch=bool)
+                print(colored(path + " exist", "red"))
+            except Directory.DoesNotExist:
+                Directory(repo_id=r.id, subdir=subdir, name=i, path=path, branch=b).save()
+                print(colored(path + " doesn't exist.", "blue"))
+            try:
+                subdir = Directory.objects.get(repo_id=r.id, path=path, branch=b).id
+                print(colored(path + " is the new subdir", "magenta"))
+            except Exception as e:
+                d = Directory.objects.filter(repo_id=r.id, path=path, branch=b)
+                d[::-1][0].delete()
+                d = Directory.objects.get(repo_id=r.id, path=path, branch=b)
+                subdir = d.id
+    return subdir
 
 def random_str(n=150):
     string = ""
@@ -232,3 +266,47 @@ def file_data(request):
     except Exception as e:
         print(e, file_path)
         return JsonResponse({"error": "unknown"})
+
+
+@csrf_exempt
+def commit(request):
+    user = User.objects.get(username=request.POST["username"])
+    r = Repository.objects.get(name=request.POST["repo"])
+    Commit(commit_id=request.POST["id"], repo_id=r.id, user_id=user.id, message=request.POST["message"], branch=request.POST["branch"]).save()
+    c = Commit.objects.get(commit_id=request.POST["id"], repo_id=r.id, user_id=user.id, message=request.POST["message"], branch=request.POST["branch"])
+    data = json.loads(request.POST["data"])
+    try:
+        for i in data["new"]:
+            aws_url = i[0]
+            dir_path = str(pathlib.Path(i[1]).parent)[1:len(str(pathlib.Path(i[1]).parent))] + "/"
+            print(dir_path)
+            subdir = upload(r, request.POST["branch"], dir_path)
+            print(subdir)
+            filename = os.path.split(i[1][1:len(i[1])-1])[1]
+            File(repo_id=r.id, filename=filename, subdir=subdir, url=i[0], branch=request.POST["branch"], path=i[1]).save()
+            f = File.objects.get(repo_id=r.id, filename=filename, subdir=subdir, url=i[0], branch=request.POST["branch"], path=i[1])
+            Commit_File(commit_id=c.commit_id, file=f.id).save()
+
+    except KeyError:
+        pass
+
+    try:
+        for i in data["changed"]:
+            f = File.objects.get(repo_id=r.id, path=i[1])
+            f.delete()
+            File(repo_id=r.id, filename=str(pathlib.Path(i[1]).parent)[1:len(str(pathlib.Path(i[1]).parent))] + "/", subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1]).save()
+    except KeyError:
+        pass
+
+    try:
+        for i in data["delete"]:
+            try:
+                f = File.objects.get(repo_id=r.id, path=i)
+                print(i)
+                f.delete()
+            except:
+                pass
+    except KeyError:
+        pass
+
+    return HttpResponse("success")

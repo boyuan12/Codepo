@@ -12,4 +12,5 @@ urlpatterns = [
     path("sentry/", views.sentry_webhook),
     path("gen-commit/", views.gen_commit_id),
     path("file-data/", views.file_data),
+    path("commit/", views.commit)
 ]
