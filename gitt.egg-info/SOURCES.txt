@@ -1,0 +1,9 @@
+README.md
+setup.py
+gitt/main.py
+gitt.egg-info/PKG-INFO
+gitt.egg-info/SOURCES.txt
+gitt.egg-info/dependency_links.txt
+gitt.egg-info/entry_points.txt
+gitt.egg-info/requires.txt
+gitt.egg-info/top_level.txt

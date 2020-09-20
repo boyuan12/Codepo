@@ -18,6 +18,7 @@ def upload(r, b, url):
         r: Repository object
         b: Branch name
         url: pure folder path for the file
+
         return subdir id
     """
     path = "/"
@@ -292,9 +293,11 @@ def commit(request):
 
     try:
         for i in data["changed"]:
+            # print(i[1])
+            # print(colored(os.path.split(i[1][:-1])[1], "red"))
             f = File.objects.get(repo_id=r.id, path=i[1])
             f.delete()
-            File(repo_id=r.id, filename=str(pathlib.Path(i[1]).parent)[1:len(str(pathlib.Path(i[1]).parent))] + "/", subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1]).save()
+            File(repo_id=r.id, filename=os.path.split(i[1][:-1])[1], subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1]).save()
     except KeyError:
         pass
 

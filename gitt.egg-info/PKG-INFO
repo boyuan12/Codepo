@@ -1,0 +1,14 @@
+Metadata-Version: 1.1
+Name: gitt
+Version: 0.0.2
+Summary: This is Git Clone for GitHub Clone (https://github-clone-dj.herokuapp.com)
+Home-page: https://github.com/boyuan12/git-clone-dj
+Author: Boyuan Liu
+Author-email: boyuanliu6@yahoo.com
+License: MIT
+Description: UNKNOWN
+Keywords: git
+Platform: UNKNOWN
+Classifier: Intended Audience :: Developers
+Classifier: Programming Language :: Python :: 3.6
+Classifier: Topic :: Software Development
