@@ -1,3 +1,0 @@
-[console_scripts]
-gitt = gitt.main:main
-

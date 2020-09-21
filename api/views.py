@@ -18,7 +18,6 @@ def upload(r, b, url):
         r: Repository object
         b: Branch name
         url: pure folder path for the file
-
         return subdir id
     """
     path = "/"
