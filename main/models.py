@@ -96,4 +96,6 @@ class Commit(models.Model):
 
 class Commit_File(models.Model):
     commit_id = models.TextField()
-    file = models.IntegerField()
+    file = models.IntegerField(null=True)
+    code = models.IntegerField(null=True) # 0: deleted
+    path = models.CharField(null=True, max_length=255)

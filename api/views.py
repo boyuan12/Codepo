@@ -1,3 +1,4 @@
+
 from django.shortcuts import render
 from main.models import Repository, Directory, File
 from django.http import HttpResponse, JsonResponse
@@ -297,6 +298,8 @@ def commit(request):
             f = File.objects.get(repo_id=r.id, path=i[1])
             f.delete()
             File(repo_id=r.id, filename=os.path.split(i[1][:-1])[1], subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1]).save()
+            f = File.objects.get(epo_id=r.id, filename=os.path.split(i[1][:-1])[1], subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1])
+            Commit_File(commit_id=c.commit_id, file=f.id).save()
     except KeyError:
         pass
 
@@ -306,6 +309,7 @@ def commit(request):
                 f = File.objects.get(repo_id=r.id, path=i)
                 print(i)
                 f.delete()
+                Commit_File(commit_id=c.commit_id, message=0, path=i).save()
             except:
                 pass
     except KeyError:

@@ -1,3 +1,4 @@
+
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import os
@@ -402,11 +403,16 @@ def view_single_commit(request, username, repo, commit_id):
     files = Commit_File.objects.filter(commit_id=commit_id)
     data = []
     for f in files:
-        file = File.objects.get(pk=f.file)
         try:
-            data.append([file.path, get_s3(file.url).decode("utf-8")])
+            file = File.objects.get(pk=f.file)
+            try:
+                data.append([file.path, get_s3(file.url).decode("utf-8")])
+            except:
+                data.append([file.path, file.url, "undecodeable"])
         except:
-            data.append([file.path, file.url, "undecodeable"])
+            if f.code == 0:
+                status = "deleted"
+            data.append([f.path, status])
     return render(request, "main/commit.html", {
         "data": data
     })
