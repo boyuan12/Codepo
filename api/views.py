@@ -298,7 +298,7 @@ def commit(request):
             f = File.objects.get(repo_id=r.id, path=i[1])
             f.delete()
             File(repo_id=r.id, filename=os.path.split(i[1][:-1])[1], subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1]).save()
-            f = File.objects.get(epo_id=r.id, filename=os.path.split(i[1][:-1])[1], subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1])
+            f = File.objects.get(repo_id=r.id, filename=os.path.split(i[1][:-1])[1], subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1])
             Commit_File(commit_id=c.commit_id, file=f.id).save()
     except KeyError:
         pass
