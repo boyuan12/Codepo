@@ -4,21 +4,17 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 from django.core.files.storage import FileSystemStorage
-
 import os
-
 from main.models import Repository, Directory, File, Branch, Star, Commit, Commit_File
 import requests
-
 from GitHubClone.settings import DEBUG
-
 import boto3
 import random
 import string
 import pathlib
-
 from termcolor import colored
 import uuid
+
 
 BASE_URL = "https://github-clone-dj.herokuapp.com"
 
@@ -40,6 +36,15 @@ def get_s3(name):
     body = obj.get()['Body'].read()
     return body
 
+def dirize(s):
+    path = ""
+    for i in s:
+        if i == "":
+            path += "/"
+        else:
+            path += i + "/"
+
+    return path
 # Create your views here.
 # @login_required(login_url='/auth/login/')
 def repo(request, username, repo, path="/"):
@@ -230,23 +235,32 @@ def change_repo_visibility(request, username, repo):
 
 
 def fork(request, username, repo):
-    # user = User.objects.get(username=username)
-    # r_org = Repository.objects.get(user_id=user.id, name=repo)
-    # dirs = Directory.objects.filter(repo_id=r_org.id)
-    # r = Repository(user_id=request.user.id, name=repo, description=r_org.description, status=r_org.status)
-    # r.save()
-    # dir_ids = {}
-    # r = Repository.objects.get(user_id=request.user.id, name=repo)
-    # for d in dirs:
-    #     # a = Directory(repo_id=r.id, dir_id=d.id, name=d.name, path=d.path, branch=)
-    #     try:
-    #         Directory(repo_id=r.id, dir_id=dir_ids[r.dir_id], name=d.name, path=d.path, branch=d.branch).save()
-    #     except KeyError:
-    #         Directory(repo_id=r_org.id, dir_id=)
-    #         pass
-    #     pass
-    # return HttpResponse(str(Directory.objects.filter(id=r.id)))
-    pass
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(user_id=user.id, name=repo)
+    Repository(user_id=request.user.id, name=repo, description=r.description, status=r.status).save()
+    user_r = Repository.objects.get(user_id=request.user.id, name=repo, description=r.description, status=r.status)
+
+    dirs = Directory.objects.filter(repo_id=r.id)
+
+    for d in dirs:
+        if d.path == "/":
+            Directory(repo_id=user_r.id, subdir=0, name=d.name, path=d.path, branch=d.branch).save()
+        else:
+            path = d.path.split("/")
+            path.pop(len(path)-1)
+            path.pop(len(path)-1)
+            subdir_path = dirize(path)
+            print(colored((d.path, d.path.split("/"), path, subdir_path), "red"))
+            subdir = Directory.objects.get(repo_id=user_r.id, path=subdir_path)
+            Directory(repo_id=user_r.id, subdir=subdir.id, name=d.name, path=d.path, branch=d.branch).save()
+
+        dir = Directory.objects.get(repo_id=user_r.id, path=d.path)
+        files = File.objects.filter(repo_id=r.id, subdir=d.id)
+
+        for f in files:
+            File(repo_id=user_r.id, filename=f.filename, subdir=dir.id, branch=f.branch, path=f.path, url=f.url).save()
+
+    return HttpResponseRedirect(f"/repo/{request.user.username}/{repo}")
 
 
 def change_name(request, username, repo):
