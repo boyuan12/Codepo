@@ -43,7 +43,7 @@ def register(request):
         Verify(user_id=user.id, code=0).save()
         code = Verify.objects.get(user_id=user.id, code=0).id
 
-        send_mail(email, "Verify your account", str(code))
+        send_mail(email, "Verify your account", f"Hello! Please click on this link to verify your email address: <a href='http://127.0.0.1:8000/auth/verify/{str(code)}'>http://127.0.0.1:8000/auth/verify/{str(code)}</a> Verification code: {str(code)}")
 
         return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
 
