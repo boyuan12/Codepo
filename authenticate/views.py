@@ -122,7 +122,8 @@ def forgot_password(request):
 
             Verify(user_id=user.id, code=1).save()
             v = Verify.objects.get(user_id=user.id, code=1)
-            send_mail(user.email, "Code for change your password", str(v.id))
+            print(v, user.email)
+            send_mail(user.email, "Code for change your password", f"Hello! Please click on this link to change your password: <a href='http://127.0.0.1:8000/auth/forgot-password/{str(v.id)}/'>http://127.0.0.1:8000/auth/forgot-password/{str(v.id)}</a> Forgot Password Code: {str(v.id)}")
             return HttpResponse("Success, please check your email")
 
         except:
@@ -135,7 +136,7 @@ def reset_password(request, code):
     if request.method == "POST":
         v = Verify.objects.get(id=code, code=1)
         user = User.objects.get(id=v.user_id)
-        user.password = request.POST["password"]
+        user.set_password(request.POST["password"])
         user.save()
         v.delete()
 
@@ -149,5 +150,5 @@ def reset_password(request, code):
                 "username": user.username
             })
             # Verify.objects.get(id=code, code=1).delete()
-        except:
+        except Exception as e:
             return HttpResponse("Invalid code")
