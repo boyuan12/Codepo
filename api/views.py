@@ -3,16 +3,16 @@ from django.shortcuts import render
 from main.models import Repository, Directory, File
 from django.http import HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from main.models import Repository, Directory, File, Commit, Commit_File
+from main.models import Repository, Directory, File, Commit, Commit_File, Profile
 from django.contrib.auth.models import User
-
 from termcolor import colored
-
 import random
 from string import ascii_letters, digits
 import json
 import os
 import pathlib
+from oauth.models import Token
+
 
 def upload(r, b, url):
     """
@@ -316,3 +316,17 @@ def commit(request):
         pass
 
     return HttpResponse("success")
+
+
+def get_user_info(request, username):
+    try:
+        token = Token.objects.get(token=request.META["HTTP_AUTHORIZATION"].split("token ")[1])
+    except:
+        return JsonResponse({"error": "invalid token"})
+
+    data = {}
+    u = User.objects.get(username=username)
+    p = Profile.objects.get(user_id=u.id)
+    data = {"id": u.id, "username": username, "organization": p.organization, "description": p.description, "location": p.location, "website": p.website, "avatar": p.avatar}
+
+    return JsonResponse(data)
