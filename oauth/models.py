@@ -24,4 +24,4 @@ class Access_Code(models.Model):
 class DeviceCode(models.Model):
     client_id = models.CharField(max_length=100)
     code = models.CharField(max_length=8)
-    user_id = models.IntegerField()
+    # user_id = models.IntegerField()

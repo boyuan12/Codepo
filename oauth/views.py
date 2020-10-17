@@ -97,19 +97,20 @@ def get_device_code(request):
             return HttpResponse("404")
 
         t = random_str(8)
-        DeviceCode(client_id=client_id, token=t, user_id=request.user.id).save()
+        DeviceCode(client_id=client_id, code=t).save()
         return JsonResponse({"token": t})
 
 
 def device_code(request):
     if request.method == "POST":
         try:
-            d = DeviceCode.objects.get(token=request.POST["code"], user_id=request.user.id)
+            d = DeviceCode.objects.get(code=request.POST["code"])
         except:
             return HttpResponse("404 NOT FOUND!")
 
         Token(client_id=d.client_id, token=random_str(60), user_id=request.user.id, device_code=request.POST["code"]).save()
 
+        return HttpResponse("success")
     else:
         return render(request, "oauth/device.html")
 

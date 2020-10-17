@@ -10,6 +10,7 @@
     <div class="container">
         <h1 style="text-align: center;">Enter your device code</h1>
         <form method="POST">
+        {% csrf_token %}
             <input type="text" class="form-control" name="code"> <br>
             <button class="btn btn-success" class="form-control">Submit</button>
         </form>
