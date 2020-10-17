@@ -2,7 +2,8 @@ from django.shortcuts import render
 
 # Create your views here.
 from django.shortcuts import render
-from .models import OAuth, Uri, Token, Access_Code
+from django.template.defaulttags import csrf_token
+from .models import OAuth, Uri, Token, Access_Code, DeviceCode
 from main.views import random_str
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect
 from django.contrib.auth.models import User
@@ -70,7 +71,7 @@ def get_token(request):
         try:
             o = OAuth.objects.get(client_id=client_id, client_secret=client_secret)
         except:
-            return HttpResponse("404")
+            return JsonResponse({"error": "404"})
 
         try:
             a = Access_Code.objects.get(access_code=code)
@@ -83,6 +84,48 @@ def get_token(request):
 
         return JsonResponse({"token": token})
 
+
+@csrf_exempt
+def get_device_code(request):
+    if request.method == "POST":
+        client_id = request.POST["client_id"]
+        client_secret = request.POST["client_secret"]
+
+        try:
+            o = OAuth.objects.get(client_id=client_id, client_secret=client_secret)
+        except:
+            return HttpResponse("404")
+
+        t = random_str(8)
+        DeviceCode(client_id=client_id, token=t, user_id=request.user.id).save()
+        return JsonResponse({"token": t})
+
+
+def device_code(request):
+    if request.method == "POST":
+        try:
+            d = DeviceCode.objects.get(token=request.POST["code"], user_id=request.user.id)
+        except:
+            return HttpResponse("404 NOT FOUND!")
+
+        Token(client_id=d.client_id, token=random_str(60), user_id=request.user.id, device_code=request.POST["code"]).save()
+
+    else:
+        return render(request, "oauth/device.html")
+
+
+@csrf_exempt
+def device_access_token(request):
+    if request.method == "POST":
+        client_id = request.POST["client_id"]
+        code = request.POST["code"]
+
+        try:
+            t = Token.objects.get(client_id=client_id, device_code=code)
+        except:
+            return JsonResponse({"error": "404"})
+
+        return JsonResponse({"access_token": t.token})
 
 # def example(request):
 #     try:

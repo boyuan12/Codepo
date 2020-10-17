@@ -15,7 +15,13 @@ class Token(models.Model):
     client_id = models.CharField(max_length=30)
     token = models.CharField(max_length=100)
     user_id = models.IntegerField() # know which user's information to fetch
+    device_code = models.CharField(max_length=8, null=True)
 
 class Access_Code(models.Model):
     access_code = models.CharField(max_length=65)
+    user_id = models.IntegerField()
+
+class DeviceCode(models.Model):
+    client_id = models.CharField(max_length=100)
+    code = models.CharField(max_length=8)
     user_id = models.IntegerField()
