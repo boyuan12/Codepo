@@ -10,6 +10,7 @@ class Repository(models.Model):
     name = models.CharField(max_length=100)
     description = models.TextField()
     status = models.IntegerField()
+    fork = models.IntegerField(null=True) # if it's forked, origin repo id.
 
 
 class File(models.Model):

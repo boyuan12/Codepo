@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Repository, Directory, File, Issue, Tags, Commit, Commit_File
+from .models import Repository, Directory, File, Issue, Tags, Commit, Commit_File, Branch
 
 # Register your models here.
 admin.site.register(Repository)
@@ -9,3 +9,4 @@ admin.site.register(Issue)
 admin.site.register(Tags)
 admin.site.register(Commit)
 admin.site.register(Commit_File)
+admin.site.register(Branch)

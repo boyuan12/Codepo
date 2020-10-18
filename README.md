@@ -4,6 +4,9 @@ This is my try to develop a web application similar to [GitHub](https://github.c
 
 Website: [https://github-clone-dj.herokuapp.com](https://github-clone-dj.herokuapp.com)
 
+## Motivation
+The motivation behind this project is to create a custom code-storing system. I really interested on how GitHub works underneath the hood, so I created a Django web application.
+
 ## Features
 ### Authentication
 To use most of the feature that this website provides, the user need to create an account at /auth/register/ *(protected by reCAPTCHA)*, or login at /auth/login/. Currently it doesn't support OAuth.
@@ -64,6 +67,7 @@ To edit your profile, you can click on Edit Profile. And you will be redirect to
 ### OAuth **(BETA)**
 TODO (Work in Progress, will get updated soon)
 
-### CLI
+### CLI **(BETA)**
 A command line interface for managing repo, work in progress
 
+## Future Time
