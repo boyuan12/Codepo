@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 from django.http import HttpResponse, HttpResponseRedirect, JsonResponse
 import os
@@ -230,11 +229,14 @@ def create_oauth_app(request):
         app = OAuth(user_id=request.user.id, name=request.POST["name"], client_id=client_id,    client_secret=random_str(50))
         app.save()
 
-        uris = request.POST["redirect_uri"].split(",")
-        for i in uris:
-            if validate_url(i):
-                u = Uri(client_id=client_id, redirect_uri=i)
-                u.save()
+        if request.POST["redirect_uri"] == "N/A":
+            pass
+        else:
+            uris = request.POST["redirect_uri"].split(",")
+            for i in uris:
+                if validate_url(i):
+                    u = Uri(client_id=client_id, redirect_uri=i)
+                    u.save()
 
         return HttpResponseRedirect("/profile/")
 

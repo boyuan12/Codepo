@@ -16,6 +16,7 @@ from termcolor import colored
 import uuid
 
 
+
 BASE_URL = "https://github-clone-dj.herokuapp.com"
 
 s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
@@ -48,7 +49,6 @@ def dirize(s):
 # Create your views here.
 # @login_required(login_url='/auth/login/')
 def repo(request, username, repo, path="/"):
-
     try:
         b = request.GET["b"]
     except:
@@ -60,6 +60,13 @@ def repo(request, username, repo, path="/"):
 
     if "/" not in path or path != "/":
         path = "/" + path + "/"
+
+    forked = None
+
+    if r.fork != None:
+        forked = Repository.objects.get(id=r.fork)
+        forked_username = User.objects.get(id=forked.user_id).username
+        forked = f"Forked from {forked_username}/{forked.name}"
 
     # check for directory or file using path
     try:
@@ -73,7 +80,8 @@ def repo(request, username, repo, path="/"):
             "branches": branches,
             "b": b,
             "repo": repo,
-            "username": username
+            "username": username,
+            "forked": forked
         })
     except:
         try:
@@ -86,14 +94,16 @@ def repo(request, username, repo, path="/"):
             return render(request, "repo/file.html", {
                 "content": content.decode("utf-8"),
                 "repo": repo,
-                "username": username
+                "username": username,
+                "forked": forked
             })
         except:
             return render(request, "repo/file.html", {
                 "decode": False,
                 "url": f.url,
                 "repo": repo,
-                "username": username
+                "username": username,
+                "forked": forked
             })
 
 
@@ -237,8 +247,9 @@ def change_repo_visibility(request, username, repo):
 def fork(request, username, repo):
     user = User.objects.get(username=username)
     r = Repository.objects.get(user_id=user.id, name=repo)
-    Repository(user_id=request.user.id, name=repo, description=r.description, status=r.status).save()
+    Repository(user_id=request.user.id, name=repo, description=r.description, status=r.status, fork=r.id).save()
     user_r = Repository.objects.get(user_id=request.user.id, name=repo, description=r.description, status=r.status)
+    Branch(repo_id=user_r.id, name="master").save()
 
     dirs = Directory.objects.filter(repo_id=r.id)
 
