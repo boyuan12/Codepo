@@ -37,9 +37,9 @@
             <div class="input-group-text">{{ star_count }}</div>
             </div>
             {% if starred == True %}
-                <button type="button" class="btn btn-secondary" onclick="location.assign('/repo/unstar/{{ repo }}/{{ username }}')">Unstar</button>
+                <button type="button" class="btn btn-secondary" onclick="location.assign('/repo/unstar/{{ request.user.username }}/{{ repo }}')">Unstar</button>
             {% else %}
-                <button type="button" class="btn btn-secondary" onclick="location.assign('/repo/star/{{ repo }}/{{ username }}')">Star</button>
+                <button type="button" class="btn btn-secondary" onclick="location.assign('/repo/star/{{ request.user.username }}/{{ repo }}')">Star</button>
             {% endif %}
         </div>
         <style>
