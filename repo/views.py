@@ -79,6 +79,12 @@ def repo(request, username, repo, path="/"):
         dirs = Directory.objects.filter(repo_id=r.id, subdir=d.id, branch=b)
         print(dirs)
         files = File.objects.filter(repo_id=r.id, subdir=d.id, branch=b)
+        readme = None
+        for f in files:
+            if f.filename.lower() == "readme.md":
+                readme = f
+                readme = get_s3(readme.url).decode("utf-8")
+        print(readme)
         return render(request, "repo/repo.html", {
             "files": files,
             "dirs": dirs,
@@ -88,7 +94,8 @@ def repo(request, username, repo, path="/"):
             "username": username,
             "forked": forked,
             "starred": starred,
-            "star_count": star_count
+            "star_count": star_count,
+            "readme": readme
         })
     except:
         try:
