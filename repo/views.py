@@ -3,7 +3,6 @@ from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, Http40
 from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
-from django.core.files.storage import FileSystemStorage
 import os
 from main.models import Repository, Directory, File, Branch, Star, Commit, Commit_File
 import requests
@@ -15,15 +14,13 @@ import pathlib
 from termcolor import colored
 import uuid
 
-
-
 BASE_URL = "https://github-clone-dj.herokuapp.com"
 
 s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
 
 def random_str(n):
     s = ""
-    for i in range(n):
+    for _ in range(n):
         s += random.choice(string.ascii_letters + string.digits)
     return s
 
@@ -68,6 +65,14 @@ def repo(request, username, repo, path="/"):
         forked_username = User.objects.get(id=forked.user_id).username
         forked = f"Forked from {forked_username}/{forked.name}"
 
+    try:
+        Star.objects.get(repo_id=r.id, user_id=request.user.id)
+        starred = True
+    except Exception as e:
+        print(str(e))
+        starred = False
+    print(starred)
+    star_count = len(Star.objects.filter(repo_id=r.id))
     # check for directory or file using path
     try:
         d = Directory.objects.get(repo_id=r.id, path=path, branch=b)
@@ -81,7 +86,9 @@ def repo(request, username, repo, path="/"):
             "b": b,
             "repo": repo,
             "username": username,
-            "forked": forked
+            "forked": forked,
+            "starred": starred,
+            "star_count": star_count
         })
     except:
         try:
@@ -284,6 +291,13 @@ def change_name(request, username, repo):
 
 def star(request, username, repo):
     user = User.objects.get(username=username)
-    r = Repository.objects.get(name=repo)
+    r = Repository.objects.get(name=repo, user_id=user.id)
     Star(user_id=user.id, repo_id=r.id).save()
+    return HttpResponseRedirect(f"/repo/{username}/{repo}/")
+
+
+def unstar(request, username, repo):
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(name=repo, user_id=request.user.id)
+    Star.objects.get(user_id=request.user.id, repo_id=r.id).delete()
     return HttpResponseRedirect(f"/repo/{username}/{repo}/")

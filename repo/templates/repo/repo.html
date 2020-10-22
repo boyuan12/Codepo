@@ -34,9 +34,13 @@
         {% endif %}
         <div class="input-group" style="margin: 0; padding: 0;">
             <div class="input-group-prepend">
-              <div class="input-group-text">@</div>
+            <div class="input-group-text">{{ star_count }}</div>
             </div>
-            <button type="button" class="btn btn-secondary" onclick="location.assign('/repo/star/{{ repo }}/{{ username }}')">Star</button>
+            {% if starred == True %}
+                <button type="button" class="btn btn-secondary" onclick="location.assign('/repo/unstar/{{ repo }}/{{ username }}')">Unstar</button>
+            {% else %}
+                <button type="button" class="btn btn-secondary" onclick="location.assign('/repo/star/{{ repo }}/{{ username }}')">Star</button>
+            {% endif %}
         </div>
         <style>
             a.custom-nav-link {
