@@ -19,5 +19,5 @@ setup(
     },
     py_requires="3.6",
     url="https://github.com/boyuan12/git-clone-dj",
-    version="0.0.2"
+    version="0.0.3"
 )
