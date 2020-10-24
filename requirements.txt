@@ -6,3 +6,4 @@ sentry-sdk==0.16.1
 termcolor
 cloudinary
 boto3
+twilio

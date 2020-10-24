@@ -1,14 +1,24 @@
-
-from django.db.models.fields.related import RECURSIVE_RELATIONSHIP_CONSTANT
 from django.shortcuts import render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from main.models import Profile, Follows
 from django.http import HttpResponseRedirect, HttpResponse
-from .models import Verify
+from .models import Verify, TwoFAToken, TwoFA
 from mail import send_mail
+from twilio.rest import Client
+import os
+import random
+from string import digits
+import datetime
 
+
+def random_2fa_code(n=6):
+    return "".join([random.choice(digits) for i in range(n)])
+
+account_sid = os.getenv("TWILIO_ACCOUNT_SID")
+auth_token = os.getenv("TWILIO_AUTH_TOKEN")
+client = Client(account_sid, auth_token)
 
 # Create your views here.
 def register(request):
@@ -122,7 +132,8 @@ def forgot_password(request):
 
             Verify(user_id=user.id, code=1).save()
             v = Verify.objects.get(user_id=user.id, code=1)
-            send_mail(user.email, "Code for change your password", str(v.id))
+            print(v, user.email)
+            send_mail(user.email, "Code for change your password", f"Hello! Please click on this link to change your password: <a href='http://127.0.0.1:8000/auth/forgot-password/{str(v.id)}/'>http://127.0.0.1:8000/auth/forgot-password/{str(v.id)}</a> Forgot Password Code: {str(v.id)}")
             return HttpResponse("Success, please check your email")
 
         except:
@@ -135,7 +146,7 @@ def reset_password(request, code):
     if request.method == "POST":
         v = Verify.objects.get(id=code, code=1)
         user = User.objects.get(id=v.user_id)
-        user.password = request.POST["password"]
+        user.set_password(request.POST["password"])
         user.save()
         v.delete()
 
@@ -149,5 +160,53 @@ def reset_password(request, code):
                 "username": user.username
             })
             # Verify.objects.get(id=code, code=1).delete()
-        except:
+        except Exception as e:
             return HttpResponse("Invalid code")
+
+
+@login_required(login_url="/auth/login/")
+def twofa(request):
+    if request.method == "POST":
+        country_code = request.POST["countryCode"]
+        phone_number = request.POST["phoneNumber"]
+        code = random_2fa_code()
+        client.messages.create(from_='+19162800623', body=f'Your 2-Factor Authentication code for GitHub Clone: {code}', to=f'+{country_code}{phone_number}')
+        TwoFAToken(user_id=request.user.id, code=code, phone=f'+{country_code}{phone_number}').save()
+        t = datetime.datetime.now() + datetime.timedelta(minutes=3)
+        request.session["re2fa"] = (t.year, t.month, t.day, t.hour,t.minute, t.second)
+        return HttpResponse("success")
+    else:
+        seconds = 0
+        try:
+            time = request.session["re2fa"]
+            time = datetime.datetime(year=time[0], month=time[1], day=time[2], hour=time[3], minute=time[4], second=time[5])
+            current = datetime.datetime.now()
+            difference = current-time
+            left = divmod(difference.days * (24 * 60 * 60) + difference.seconds, 60)
+            seconds = left[0] * 60 + left[1]
+        except:
+            pass
+        if seconds > 0:
+            seconds = 0
+        return render(request, "authenticate/phone_verify.html", {
+            "seconds": ["a" for i in range(seconds * -1)]
+        })
+
+
+def twofa_verify(request):
+    if request.method == "POST":
+        try:
+            t = TwoFAToken.objects.get(code=request.POST["code"])
+            try:
+                r = request.GET["next"]
+                return HttpResponseRedirect(r)
+            except Exception as e:
+                print(e)
+                pass
+            TwoFA(user_id=request.user.id, phone=t.phone).save()
+            return HttpResponse("Successfully Verified.")
+        except Exception as e:
+            print(e)
+            return HttpResponse("Invalid code")
+    else:
+        return render(request, "authenticate/phone_code.html")
