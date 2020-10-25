@@ -69,5 +69,3 @@ TODO (Work in Progress, will get updated soon)
 
 ### CLI **(BETA)**
 A command line interface for managing repo, work in progress
-
-## Future Time
