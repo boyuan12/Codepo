@@ -67,6 +67,7 @@ def index(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     print(ip)
+    print(request.COOKIES)
     if request.user.is_authenticated:
         repos = Repository.objects.filter(user_id=request.user.id)
         return render(request, "main/index.html", {
