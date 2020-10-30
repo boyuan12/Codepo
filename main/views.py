@@ -17,6 +17,7 @@ from termcolor import colored
 import boto3
 import pathlib
 from django.views.decorators.csrf import csrf_exempt
+import httpagentparser
 
 
 cloudinary.config(
@@ -61,6 +62,8 @@ def validate_url(url):
 
 # Create your views here.
 def index(request):
+    h = httpagentparser.detect(request.headers["User-Agent"])
+    print(h)
     if request.user.is_authenticated:
         repos = Repository.objects.filter(user_id=request.user.id)
         return render(request, "main/index.html", {
