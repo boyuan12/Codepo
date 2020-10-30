@@ -17,6 +17,7 @@ from termcolor import colored
 import boto3
 import pathlib
 from django.views.decorators.csrf import csrf_exempt
+from authenticate.models import TwoFA
 
 
 cloudinary.config(
@@ -187,11 +188,18 @@ def edit_profile(request):
         uris = {}
         for o in oauth:
             uris[o.client_id] = Uri.objects.filter(client_id=o.client_id)
+        
+        try:
+            twofa = TwoFA.objects.get(user_id=request.user.id)
+        except Exception as e:
+            print(e)
+            twofa = None
 
         return render(request, "main/profile.html", {
             "p": p,
             "oauth": oauth,
             "uris": uris,
+            "twofa": twofa
         })
 
 

@@ -12,5 +12,6 @@ urlpatterns = [
     path("<str:username>/<str:repo>/upload/", views.upload),
     # path("<str:username>/<str:repo>/upload/<path:url>/", views.upload),
     path("<str:username>/<str:repo>/", views.repo),
-    path("<str:username>/<str:repo>/<path:path>/", views.repo)
+    path("<str:username>/<str:repo>/<path:path>/", views.repo),
+    path("<str:username>/<str:repo>/edit/", views.edit),
 ]

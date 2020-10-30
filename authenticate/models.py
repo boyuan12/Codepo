@@ -17,3 +17,10 @@ class TwoFAToken(models.Model):
 class TwoFA(models.Model):
     user_id = models.IntegerField()
     phone = models.TextField()
+
+
+class AuthorizedDevice(models.Model):
+    user_id = models.IntegerField()
+    os = models.CharField(max_length=50)
+    platform = models.CharField(max_length=50)
+    ip = models.CharField(max_length=25)

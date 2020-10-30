@@ -4,17 +4,27 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from main.models import Profile, Follows
 from django.http import HttpResponseRedirect, HttpResponse
-from .models import Verify, TwoFAToken, TwoFA
+from .models import Verify, TwoFAToken, TwoFA, AuthorizedDevice
 from mail import send_mail
 from twilio.rest import Client
 import os
 import random
 from string import digits
 import datetime
+import httpagentparser
 
 
 def random_2fa_code(n=6):
     return "".join([random.choice(digits) for i in range(n)])
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
 
 account_sid = os.getenv("TWILIO_ACCOUNT_SID")
 auth_token = os.getenv("TWILIO_AUTH_TOKEN")
@@ -62,7 +72,8 @@ def register(request):
 
 
 def login_view(request):
-
+    h = httpagentparser.detect(request.headers["User-Agent"])
+    print(h)
     if request.method == "POST":
 
         username = request.POST["username"]
@@ -75,6 +86,10 @@ def login_view(request):
                 Verify.objects.get(user_id=user1.id, code=0)
                 return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
             except:
+                try:
+                    AuthorizedDevice(user_id=user1.id, )
+                except:
+                    pass
                 login(request, user1)
 
         else:
@@ -82,6 +97,7 @@ def login_view(request):
                 user2 = User.objects.get(email=request.POST["username"])
             except:
                 return HttpResponse("invalid lol")
+
             user2 = authenticate(username=user2.username, password=request.POST["password"])
 
             if user2 is not None:
