@@ -268,6 +268,8 @@ def twofa_device_verify(request):
         u = User.objects.get(id=user_id)
         login(request, u)
 
+        request.session["img"] = Profile.objects.get(user_id=request.user.id).avatar
+
         AuthorizedDevice(user_id=request.user.id).save()
         request.session["deviceid"] = str(AuthorizedDevice.objects.filter(user_id=request.user.id)[::-1][0].id)
 
