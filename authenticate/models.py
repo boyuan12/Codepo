@@ -20,7 +20,5 @@ class TwoFA(models.Model):
 
 
 class AuthorizedDevice(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
     user_id = models.IntegerField()
-    os = models.CharField(max_length=50)
-    platform = models.CharField(max_length=50)
-    ip = models.CharField(max_length=25)

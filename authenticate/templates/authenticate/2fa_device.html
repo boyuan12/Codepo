@@ -2,7 +2,8 @@
 
 {% block main %}
     <div class="container">
-        <h1>Enter your code here to complete 2FA</h1>
+        <h1>2FA Completion</h1>
+        <p>Hello, system detected this is a new device, so we sent {{ way }}. Please check and type your code here afterward. Thanks.</p>
         <form method="POST">
             {% csrf_token %}
             <div>

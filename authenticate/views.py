@@ -12,6 +12,7 @@ import random
 from string import digits
 import datetime
 import httpagentparser
+from termcolor import colored
 
 
 def random_2fa_code(n=6):
@@ -72,12 +73,20 @@ def register(request):
 
 
 def login_view(request):
-    h = httpagentparser.detect(request.headers["User-Agent"])
-    print(h)
+    # h = httpagentparser.detect(request.headers["User-Agent"])
+    # print(h)
+    print(request.COOKIES)
+
     if request.method == "POST":
 
+        device_id = request.POST["deviceid"]
         username = request.POST["username"]
         password = request.POST["password"]
+
+        try:
+            r = request.GET["next"]
+        except:
+            r = "/"
 
         user1 = authenticate(username=username, password=password)
 
@@ -87,9 +96,14 @@ def login_view(request):
                 return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
             except:
                 try:
-                    AuthorizedDevice(user_id=user1.id, )
-                except:
-                    pass
+                    AuthorizedDevice.objects.get(user_id=user1.id, id=device_id)
+                    print(device_id)
+                except Exception as e:
+                    print(str(e), "red")
+                    request.session["2fa_user_id"] = user1.id
+                    request.session["r"] = r
+                    print(request.session)
+                    return HttpResponseRedirect("/auth/2fa/devices/verify/")
                 login(request, user1)
 
         else:
@@ -105,18 +119,31 @@ def login_view(request):
                     Verify.objects.get(user_id=user2.id, code=0)
                     return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
                 except Exception as e:
+                    try:
+                        AuthorizedDevice.objects.get(user_id=user2.id, id=device_id)
+                        print(colored("2", "red"))
+                    except Exception as e:
+                        print(colored(str(e), "yellow"))
+                        request.session["2fa_user_id"] = user2.id
+                        request.session["r"] = r
+                        return HttpResponseRedirect("/auth/2fa/devices/verify/")
                     login(request, user2)
             else:
                 return HttpResponse("invalid")
 
         request.session["img"] = Profile.objects.get(user_id=request.user.id).avatar
 
-        try:
-            return HttpResponseRedirect(request.GET["next"])
-        except:
-            return HttpResponseRedirect("/")
+        # return render(request, "authenticate/redirect.html", {"route": r, "deviceid": "hihihi-1234-l14m"})
+        return HttpResponseRedirect(r)
 
     else:
+        print(request.session.get("deviceid"), "blue")
+        if request.session.get("deviceid") is not None:
+            return render(request, "authenticate/redirect.html", {
+                "route": request.session.get("r"), 
+                "deviceid": request.session.get("deviceid")
+            })
+
         return render(request, "authenticate/login.html")
 
 
@@ -226,3 +253,41 @@ def twofa_verify(request):
             return HttpResponse("Invalid code")
     else:
         return render(request, "authenticate/phone_code.html")
+
+
+def twofa_device_verify(request):
+    if request.method == "POST":
+        print(request.session)
+        try:
+            t = TwoFAToken.objects.get(code=request.POST["code"])
+            user_id = t.user_id
+            t.delete()
+        except:
+            return HttpResponse("Invalid code")
+        
+        u = User.objects.get(id=user_id)
+        login(request, u)
+
+        AuthorizedDevice(user_id=request.user.id).save()
+        request.session["deviceid"] = str(AuthorizedDevice.objects.filter(user_id=request.user.id)[::-1][0].id)
+
+        return HttpResponseRedirect("/auth/login/")
+
+
+    else:
+        try:
+            t = TwoFA.objects.get(user_id=request.session.get("2fa_user_id"))
+            code = random_2fa_code()
+            TwoFAToken(user_id=request.session.get("2fa_user_id"), code=code, phone="").save()
+            client.messages.create(from_='+19162800623', body=f'Your 2-Factor Authentication code for GitHub Clone: {code}', to=t.phone)
+            print(t.phone)
+            way = "a SMS message to which you registered"
+        except Exception as e:
+            print(e)
+            User.objects.get(id=request.session.get("2fa_user_id"))
+            send_mail()
+            way = "an email to which you register"
+        
+        return render(request, "authenticate/2fa_device.html", {
+            "way": way,
+        })
