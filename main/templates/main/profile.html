@@ -58,6 +58,12 @@
                 </ul>
             </div>
         {% endfor %}
+        <h2>Two-Factor Authentication</h2>
+        {% if twofa == None %}
+            <h4 style="color: red;">Not Verified, <a href="/auth/2fa/">Verify Now for security</a>!</h4>
+        {% else %}
+            <h4>Verified: Your phone number is {{ twofa.phone }}</h4>
+        {% endif %}
     </div>
     <script>
         function previewFile() {

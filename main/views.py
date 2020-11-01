@@ -17,7 +17,7 @@ from termcolor import colored
 import boto3
 import pathlib
 from django.views.decorators.csrf import csrf_exempt
-import httpagentparser
+from authenticate.models import TwoFA
 
 
 cloudinary.config(
@@ -62,15 +62,6 @@ def validate_url(url):
 
 # Create your views here.
 def index(request):
-    h = httpagentparser.detect(request.headers["User-Agent"])
-    print(h)
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    print(ip)
-    print(request.COOKIES)
     if request.user.is_authenticated:
         repos = Repository.objects.filter(user_id=request.user.id)
         return render(request, "main/index.html", {
@@ -197,11 +188,18 @@ def edit_profile(request):
         uris = {}
         for o in oauth:
             uris[o.client_id] = Uri.objects.filter(client_id=o.client_id)
+        
+        try:
+            twofa = TwoFA.objects.get(user_id=request.user.id)
+        except Exception as e:
+            print(e)
+            twofa = None
 
         return render(request, "main/profile.html", {
             "p": p,
             "oauth": oauth,
             "uris": uris,
+            "twofa": twofa
         })
 
 
