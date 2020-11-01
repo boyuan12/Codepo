@@ -1,0 +1,15 @@
+{% extends "main/base.html" %}
+
+{% block main %}
+    <div class="container">
+        <h1>2FA Completion</h1>
+        <p>Hello, system detected this is a new device, so we sent {{ way }}. Please check and type your code here afterward. Thanks.</p>
+        <form method="POST">
+            {% csrf_token %}
+            <div>
+                <input type="text" placeholder="2FA Code" class="form-control" name="code">
+            </div>
+            <button type="submit" class="btn btn-primary">Verify</button>
+        </form>
+    </div>
+{% endblock %}

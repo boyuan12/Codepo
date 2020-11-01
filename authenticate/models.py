@@ -17,3 +17,8 @@ class TwoFAToken(models.Model):
 class TwoFA(models.Model):
     user_id = models.IntegerField()
     phone = models.TextField()
+
+
+class AuthorizedDevice(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4)
+    user_id = models.IntegerField()

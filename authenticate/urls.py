@@ -10,5 +10,6 @@ urlpatterns = [
     path("forgot-password/", views.forgot_password, name="forgot password"),
     path("forgot-password/<str:code>/", views.reset_password, name="reset password"),
     path("2fa/", views.twofa),
-    path("2fa/verify/", views.twofa_verify)
+    path("2fa/verify/", views.twofa_verify),
+    path("2fa/devices/verify/", views.twofa_device_verify)
 ]
