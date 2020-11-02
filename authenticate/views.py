@@ -286,8 +286,10 @@ def twofa_device_verify(request):
             way = "a SMS message to which you registered"
         except Exception as e:
             print(e)
-            User.objects.get(id=request.session.get("2fa_user_id"))
-            send_mail()
+            u = User.objects.get(id=request.session.get("2fa_user_id"))
+            code = random_2fa_code()
+            TwoFAToken(user_id=request.session.get("2fa_user_id"), code=code, phone="").save()
+            send_mail(u.email, "Are you really you?", f"Your 2FA code for GitHub Clone is: {code}")
             way = "an email to which you register"
         
         return render(request, "authenticate/2fa_device.html", {
