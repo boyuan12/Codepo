@@ -35,6 +35,10 @@ def clone(username, repo):
     # repo = input("Repository: ")
 
     r = requests.get(f"https://github-clone-dj.herokuapp.com/api/repo/?username={username}&repo={repo}").json()
+
+    os.mkdir(repo)
+    os.chdir(repo)
+
     for key, val in r["directories"].items():
         try:
             os.mkdir(val[1][1:len(val[1])-1])
@@ -69,6 +73,8 @@ def commit(message, branch):
     r = requests.get(f"https://github-clone-dj.herokuapp.com/api/repo/?username={username}&repo={repo}").json()["files"]
     for _ in r:
         org.append(_[3])
+
+    os.chdir(repo)
 
     for dir_, _, files in os.walk(os.getcwd()):
         for file_name in files:
