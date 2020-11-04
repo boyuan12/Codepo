@@ -315,3 +315,12 @@ def unstar(request, username, repo):
 def edit(request, username, repo):
     File.objects.get(path=request.GET["path"])
     return request.GET["path"]
+
+
+def download_zip(request, username, repo):
+    r = requests.post("https://github-clone-dj-helper.herokuapp.com/gitt-zip", data={
+        "username": username,
+        "repo": repo
+    })
+
+    return HttpResponseRedirect(f"https://githubclone.s3-us-west-1.amazonaws.com/{repo}.zip")

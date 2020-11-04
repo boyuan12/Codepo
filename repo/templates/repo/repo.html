@@ -26,6 +26,9 @@
         hljs.initHighlightingOnLoad();
         hljs.initLineNumbersOnLoad();
     </script>
+        
+        <button class="btn btn-primary" onclick="location.assign('/repo/download_zip/{{ username }}/{{ repo }}')">Download as a zip</button>
+        <h4>Or <code>gitt -clone {{ username }} {{ repo }}</code></h4>
         {% if username != request.user.username %}
             <button type="button" class="btn btn-secondary" onclick="location.assign('/repo/fork/{{ repo }}/{{ username }}')">Fork</button>
         {% endif %}
