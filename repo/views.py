@@ -308,3 +308,12 @@ def unstar(request, username, repo):
     r = Repository.objects.get(name=repo, user_id=request.user.id)
     Star.objects.get(user_id=request.user.id, repo_id=r.id).delete()
     return HttpResponseRedirect(f"/repo/{username}/{repo}/")
+
+
+def download_zip(request, username, repo):
+    r = requests.post("https://github-clone-dj-helper.herokuapp.com/gitt-zip", data={
+        "username": username,
+        "repo": repo
+    })
+
+    return HttpResponseRedirect(f"https://githubclone.s3-us-west-1.amazonaws.com/{repo}.zip")
