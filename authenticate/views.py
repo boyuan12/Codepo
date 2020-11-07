@@ -13,6 +13,13 @@ from string import digits
 import datetime
 import httpagentparser
 from termcolor import colored
+from GitHubClone.settings import DEBUG
+
+
+if DEBUG:
+    BASE_URL = "http://127.0.0.1:8000"
+else:
+    BASE_URL = "https://github-clone-dj.herokuapp.com"
 
 
 def random_2fa_code(n=6):
@@ -64,7 +71,7 @@ def register(request):
         Verify(user_id=user.id, code=0).save()
         code = Verify.objects.get(user_id=user.id, code=0).id
 
-        send_mail(email, "Verify your account", f"Hello! Please click on this link to verify your email address: <a href='http://127.0.0.1:8000/auth/verify/{str(code)}'>http://127.0.0.1:8000/auth/verify/{str(code)}</a> Verification code: {str(code)}")
+        send_mail(email, "Verify your account", f"Hello! Please click on this link to verify your email address: <a href='{BASE_URL}/auth/verify/{str(code)}'>{BASE_URL}/auth/verify/{str(code)}</a> Verification code: {str(code)}")
 
         return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
 
@@ -175,8 +182,8 @@ def forgot_password(request):
 
             Verify(user_id=user.id, code=1).save()
             v = Verify.objects.get(user_id=user.id, code=1)
-            print(v, user.email)
-            send_mail(user.email, "Code for change your password", f"Hello! Please click on this link to change your password: <a href='http://127.0.0.1:8000/auth/forgot-password/{str(v.id)}/'>http://127.0.0.1:8000/auth/forgot-password/{str(v.id)}</a> Forgot Password Code: {str(v.id)}")
+            
+            send_mail(user.email, "Code for change your password", f"Hello! Please click on this link to change your password: <a href='{BASE_URL}/auth/forgot-password/{str(v.id)}/'>{BASE_URL}/auth/forgot-password/{str(v.id)}</a> Forgot Password Code: {str(v.id)}")
             return HttpResponse("Success, please check your email")
 
         except:

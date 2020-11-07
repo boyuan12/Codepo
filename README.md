@@ -8,6 +8,10 @@ Website: [https://github-clone-dj.herokuapp.com](https://github-clone-dj.herokua
 The motivation behind this project is to create a custom code-storing system. I really interested on how GitHub works underneath the hood, so I created a Django web application.
 
 ## Features
+<!--
+(Detail features documentations can be find on the Wiki section for this repository. Or you can just click on the link for each core features)
+-->
+
 ### Authentication
 To use most of the feature that this website provides, the user need to create an account at /auth/register/ *(protected by reCAPTCHA)*, or login at /auth/login/. Currently it doesn't support OAuth.
 ![](https://res.cloudinary.com/boyuan12/image/upload/v1600326627/Screen_Shot_2020-09-17_at_12.10.21_AM_kbmfmq.png) 
@@ -68,7 +72,7 @@ To edit your profile, you can click on Edit Profile. And you will be redirect to
 TODO (Work in Progress, will get updated soon)
 
 ### CLI **(BETA)**
-A command line interface for managing repo, work in progress
+Documentation for Gitt (CLI) can be find on README on cli branch in this repository. 
 
 ### 2-Factor Authentication
 This site offer 2-Factor Authentication (2FA) for security using SMS message. To verify your phone number for 2FA, go to `/auth/2fa/`, then you should see where you can select country code, and type phone number there.
