@@ -328,6 +328,6 @@ def get_user_info(request):
 
     u = User.objects.get(id=token.user_id)
     p = Profile.objects.get(user_id=u.id)
-    data = {"id": u.id, "username": username, "organization": p.organization, "description": p.description, "location": p.location, "website": p.website, "avatar": p.avatar}
+    data = {"id": u.id, "username": u.username, "organization": p.organization, "description": p.description, "location": p.location, "website": p.website, "avatar": p.avatar}
 
     return JsonResponse(data)
