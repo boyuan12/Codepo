@@ -13,5 +13,5 @@ urlpatterns = [
     path("gen-commit/", views.gen_commit_id),
     path("file-data/", views.file_data),
     path("commit/", views.commit),
-    path("<str:username>/", views.get_user_info)
+    path("user/", views.get_user_info)
 ]

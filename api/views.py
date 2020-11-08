@@ -318,14 +318,15 @@ def commit(request):
     return HttpResponse("success")
 
 
-def get_user_info(request, username):
+def get_user_info(request):
     try:
         token = Token.objects.get(token=request.META["HTTP_AUTHORIZATION"].split("token ")[1])
     except:
         return JsonResponse({"error": "invalid token"})
 
     data = {}
-    u = User.objects.get(username=username)
+
+    u = User.objects.get(id=token.user_id)
     p = Profile.objects.get(user_id=u.id)
     data = {"id": u.id, "username": username, "organization": p.organization, "description": p.description, "location": p.location, "website": p.website, "avatar": p.avatar}
 

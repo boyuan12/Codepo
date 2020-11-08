@@ -62,7 +62,11 @@ To edit your profile, you can click on Edit Profile. And you will be redirect to
 (P.S. Have I mentioned that I use Grammarly?)
 
 ### OAuth **(BETA)**
-TODO (Work in Progress, will get updated soon)
+We also have a standard OAuth workflow, just like original GitHub. Currently, there's both web OAuth workflow and Non-web workflow. 
+
+#### Web Workflow
+1. Register a new OAuth app at `/profile/`'s OAuth App section
+2. 
 
 ### CLI
 A command line interface for managing repo, work in progress
