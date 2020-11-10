@@ -13,5 +13,6 @@ urlpatterns = [
     path("gen-commit/", views.gen_commit_id),
     path("file-data/", views.file_data),
     path("commit/", views.commit),
-    path("user/", views.get_user_info)
+    path("user/", views.get_user_info),
+    path("query-repo/", views.query_repo),
 ]

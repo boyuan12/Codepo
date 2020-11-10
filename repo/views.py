@@ -14,6 +14,7 @@ import pathlib
 from termcolor import colored
 import uuid
 
+
 BASE_URL = "https://github-clone-dj.herokuapp.com"
 
 s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_secret_access_key=os.getenv("S3_SECRET_ACCESS_KEY_ID"))
@@ -46,6 +47,7 @@ def dirize(s):
 # Create your views here.
 # @login_required(login_url='/auth/login/')
 def repo(request, username, repo, path="/"):
+    
     try:
         b = request.GET["b"]
     except:
@@ -53,6 +55,10 @@ def repo(request, username, repo, path="/"):
 
     user = User.objects.get(username=username)
     r = Repository.objects.get(name=repo, user_id=user.id)
+    
+    if r.status == 1 and r.user_id != request.user.id:
+        return HttpResponse("404")
+
     branches = Branch.objects.filter(repo_id=r.id)
 
     if "/" not in path or path != "/":
@@ -308,6 +314,11 @@ def unstar(request, username, repo):
     r = Repository.objects.get(name=repo, user_id=request.user.id)
     Star.objects.get(user_id=request.user.id, repo_id=r.id).delete()
     return HttpResponseRedirect(f"/repo/{username}/{repo}/")
+
+
+def edit(request, username, repo):
+    File.objects.get(path=request.GET["path"])
+    return request.GET["path"]
 
 
 def download_zip(request, username, repo):

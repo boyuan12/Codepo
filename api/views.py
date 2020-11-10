@@ -331,3 +331,12 @@ def get_user_info(request):
     data = {"id": u.id, "username": u.username, "organization": p.organization, "description": p.description, "location": p.location, "website": p.website, "avatar": p.avatar}
 
     return JsonResponse(data)
+
+
+def query_repo(request):
+    r = Repository.objects.filter(name__contains=request.GET["name"], user_id=int(request.GET["user_id"])).order_by("name")
+    repos = []
+    for i in r:
+        repos.append(i.name)
+    print(colored(repos, "red"))
+    return JsonResponse(repos, safe=False)
