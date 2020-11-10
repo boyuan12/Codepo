@@ -55,6 +55,10 @@ def repo(request, username, repo, path="/"):
 
     user = User.objects.get(username=username)
     r = Repository.objects.get(name=repo, user_id=user.id)
+    
+    if r.status == 1 and r.user_id != request.user.id:
+        return HttpResponse("404")
+
     branches = Branch.objects.filter(repo_id=r.id)
 
     if "/" not in path or path != "/":
