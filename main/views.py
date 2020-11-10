@@ -63,7 +63,7 @@ def validate_url(url):
 # Create your views here.
 def index(request):
     if request.user.is_authenticated:
-        repos = Repository.objects.filter(user_id=request.user.id)
+        repos = Repository.objects.filter(user_id=request.user.id).order_by("name")
         return render(request, "main/index.html", {
             "repos": repos
         })
