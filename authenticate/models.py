@@ -14,6 +14,10 @@ class TwoFAToken(models.Model):
     phone = models.TextField()
 
 
+class TwoFAUsage(models.Model):
+    user_id = models.IntegerField()
+
+
 class TwoFA(models.Model):
     user_id = models.IntegerField()
     phone = models.TextField()

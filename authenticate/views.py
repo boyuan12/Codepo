@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
 from main.models import Profile, Follows
 from django.http import HttpResponseRedirect, HttpResponse
-from .models import Verify, TwoFAToken, TwoFA, AuthorizedDevice
+from .models import Verify, TwoFAToken, TwoFA, AuthorizedDevice, TwoFAUsage
 from mail import send_mail
 from twilio.rest import Client
 import os
@@ -103,14 +103,19 @@ def login_view(request):
                 return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
             except:
                 try:
-                    AuthorizedDevice.objects.get(user_id=user1.id, id=device_id)
-                    print(device_id)
-                except Exception as e:
-                    print(str(e), "red")
-                    request.session["2fa_user_id"] = user1.id
-                    request.session["r"] = r
-                    print(request.session)
-                    return HttpResponseRedirect("/auth/2fa/devices/verify/")
+                    TwoFAUsage.objects.get(user_id=user1.id)
+                    try:
+                        AuthorizedDevice.objects.get(user_id=user1.id, id=device_id)
+                        print(device_id)
+                    except Exception as e:
+                        print(str(e), "red")
+                        request.session["2fa_user_id"] = user1.id
+                        request.session["r"] = r
+                        print(request.session)
+                        return HttpResponseRedirect("/auth/2fa/devices/verify/")
+                except:
+                    pass
+
                 login(request, user1)
 
         else:
@@ -127,13 +132,18 @@ def login_view(request):
                     return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
                 except Exception as e:
                     try:
-                        AuthorizedDevice.objects.get(user_id=user2.id, id=device_id)
-                        print(colored("2", "red"))
-                    except Exception as e:
-                        print(colored(str(e), "yellow"))
-                        request.session["2fa_user_id"] = user2.id
-                        request.session["r"] = r
-                        return HttpResponseRedirect("/auth/2fa/devices/verify/")
+                        TwoFAUsage.objects.get(user_id=user1.id)
+                        try:
+                            AuthorizedDevice.objects.get(user_id=user2.id, id=device_id)
+                            print(colored("2", "red"))
+                        except Exception as e:
+                            print(colored(str(e), "yellow"))
+                            request.session["2fa_user_id"] = user2.id
+                            request.session["r"] = r
+                            return HttpResponseRedirect("/auth/2fa/devices/verify/")
+                    except:
+                        pass
+
                     login(request, user2)
             else:
                 return HttpResponse("invalid")
@@ -254,6 +264,7 @@ def twofa_verify(request):
                 print(e)
                 pass
             TwoFA(user_id=request.user.id, phone=t.phone).save()
+            TwoFAUsage(user_id=request.user.id).save()
             return HttpResponse("Successfully Verified.")
         except Exception as e:
             print(e)
@@ -302,3 +313,24 @@ def twofa_device_verify(request):
         return render(request, "authenticate/2fa_device.html", {
             "way": way,
         })
+
+
+@login_required(login_url="/auth/login/")
+def twofa_email(request):
+
+    try:
+        TwoFAUsage.objects.get(user_id=request.user.id)
+    except:
+        TwoFAUsage(user_id=request.user.id).save()
+
+    return HttpResponseRedirect("/profile/")
+
+
+@login_required(login_url="/auth/login/")
+def twofa_opt_out(request):
+
+    TwoFAToken.objects.filter(user_id=request.user.id).delete()
+    TwoFA.objects.filter(user_id=request.user.id).delete()
+    TwoFAUsage.objects.filter(user_id=request.user.id).delete()
+
+    return HttpResponseRedirect("/profile/")
