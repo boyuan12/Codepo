@@ -8,6 +8,10 @@ class Verify(models.Model):
     code = models.IntegerField() # 0: Email Verify, 1: Forgot Password
 
 
+class TwoFAUsage(models.Model):
+    user_id = models.IntegerField()
+
+
 class TwoFAToken(models.Model):
     user_id = models.IntegerField()
     code = models.CharField(max_length=7, unique=True)

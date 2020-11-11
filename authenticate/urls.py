@@ -11,5 +11,7 @@ urlpatterns = [
     path("forgot-password/<str:code>/", views.reset_password, name="reset password"),
     path("2fa/", views.twofa),
     path("2fa/verify/", views.twofa_verify),
-    path("2fa/devices/verify/", views.twofa_device_verify)
+    path("2fa/devices/verify/", views.twofa_device_verify),
+    path("2fa/email/", views.twofa_email),
+    path("2fa/opt-out/", views.twofa_opt_out),
 ]
