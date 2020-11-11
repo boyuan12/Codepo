@@ -17,7 +17,7 @@ from termcolor import colored
 import boto3
 import pathlib
 from django.views.decorators.csrf import csrf_exempt
-from authenticate.models import TwoFA
+from authenticate.models import TwoFA, TwoFAUsage
 
 
 cloudinary.config(
@@ -188,9 +188,17 @@ def edit_profile(request):
         uris = {}
         for o in oauth:
             uris[o.client_id] = Uri.objects.filter(client_id=o.client_id)
+
+        twofa_message = ""
         
         try:
-            twofa = TwoFA.objects.get(user_id=request.user.id)
+            twofa = TwoFAUsage.objects.get(user_id=request.user.id)
+            try:
+                t = TwoFA.objects.get(user_id=request.user.id)
+                twofa_message = f"Your phone number is: {t.phone}"
+            except:
+                twofa_message = f"Your email address is: {request.user.email}"
+    
         except Exception as e:
             print(e)
             twofa = None
@@ -199,7 +207,8 @@ def edit_profile(request):
             "p": p,
             "oauth": oauth,
             "uris": uris,
-            "twofa": twofa
+            "twofa": twofa,
+            "twofa_message": twofa_message
         })
 
 

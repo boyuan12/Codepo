@@ -60,9 +60,9 @@
         {% endfor %}
         <h2>Two-Factor Authentication</h2>
         {% if twofa == None %}
-            <h4 style="color: red;">Not Verified, <a href="/auth/2fa/">Verify Now for security</a>!</h4>
+            <h4 style="color: red;">Not Verified, <a href="/auth/2fa/email/">Use email for 2FA</a>, or <a href="/auth/2fa/">use phone number</a>! (Note: If you want to change your selection, you must opt-out from 2FA, then choose your option.)</h4>
         {% else %}
-            <h4>Verified: Your phone number is {{ twofa.phone }}</h4>
+            <h4>{{ twofa_message }}, or <a href="/auth/2fa/opt-out">opt-out from 2FA</a>.</h4>
         {% endif %}
     </div>
     <script>
