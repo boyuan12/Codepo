@@ -18,6 +18,7 @@ import boto3
 import pathlib
 from django.views.decorators.csrf import csrf_exempt
 from authenticate.models import TwoFA, TwoFAUsage
+from helpers import random_word
 
 
 cloudinary.config(
@@ -25,17 +26,6 @@ cloudinary.config(
     api_key = "893778436618783",
     api_secret = "X4LufXPHxvv4hROS3VZWYyR3tIE"
 )
-
-def random_words(n=3):
-    word_site = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
-    response = requests.get(word_site)
-    WORDS = response.content.splitlines()
-    words = ""
-    for i in range(n):
-        word = random.choice(WORDS).decode("utf-8")
-        words += word.capitalize()
-    return words
-
 
 def random_str(n):
     s = ""
@@ -99,7 +89,10 @@ def new(request):
         return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['name']}/")
 
     else:
-        return render(request, "main/new.html")
+        return render(request, "main/new.html", {
+            "random_name": random_word()
+        })
+
 
 @login_required(login_url='/auth/login/')
 def profile(request, username):

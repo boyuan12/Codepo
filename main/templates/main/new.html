@@ -7,8 +7,10 @@
             {% csrf_token %}
             <div class="input-group mb-3">
                 <span class="input-group-text" id="basic-addon1">{{ request.user.username }}/</span>
-                <input type="text" class="form-control" placeholder="Repository Name" aria-describedby="basic-addon1" name="name">
+                <input type="text" class="form-control" placeholder="Repository Name" aria-describedby="basic-addon1" name="name" id="name">
             </div>
+            <span id="random_name">Or, how about <button type="button" class="btn btn-link" style="color: green" onclick="randomName('{{ random_name }}')">{{ random_name }}</button>
+                ?</span>
             <div class="mb-3">
                 <label for="exampleFormControlTextarea1" class="form-label">Repository Description</label>
                 <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" name="description" required></textarea>
@@ -31,4 +33,10 @@
             <button type="submit" class="btn btn-success">Create repository</button>
         </form>
     </div>
+    <script>
+        function randomName(name) {
+            document.getElementById("name").value = name;
+            document.getElementById("random_name").remove();
+        }
+    </script>
 {% endblock %}
