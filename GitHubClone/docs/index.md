@@ -1,0 +1,2 @@
+# Welcome to GitHub Clone
+This is documentation of where GitHub Clone located. Similar to https://docs.github.com. If you have any questions or concerns, please open an issue. Beyond that, just have fun browsing this documentation

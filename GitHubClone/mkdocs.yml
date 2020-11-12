@@ -1,0 +1,9 @@
+site_name: GitHub Clone
+nav:
+  - Home: index.md
+  - Authentication: authentication.md
+  - Repository: repository.md
+  - Page: page.md
+  - Profile: profile.md
+  - 2-Factor Authentication: 2fa.md
+theme: readthedocs
