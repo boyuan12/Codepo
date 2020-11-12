@@ -15,7 +15,8 @@ class RepositoryTestCase(TestCase):
     def login(self):
         rv = self.client.post("/auth/login/", data={
             "username": "testing",
-            "password": "testing"
+            "password": "testing",
+            "deviceid": ""
         }, follow=True)
 
     def test_create_repo(self):

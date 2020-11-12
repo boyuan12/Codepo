@@ -36,7 +36,8 @@ class AuthenticationTestCase(TestCase):
 
         rv = self.client.post("/auth/login/", data={
             "username": "abc",
-            "password": "abc"
+            "password": "abc",
+            "deviceid": ""
         }, follow=True)
 
         # print(rv.content)
@@ -57,7 +58,8 @@ class AuthenticationTestCase(TestCase):
 
         rv = self.client.post("/auth/login/", data={
             "username": "hello",
-            "password": "world"
+            "password": "world",
+            "deviceid": ""
         }, follow=True)
         assert b'Repositories' in rv.content
 
@@ -84,7 +86,8 @@ class AuthenticationTestCase(TestCase):
 
         rv = self.client.post(f"/auth/login/", {
             "username": "test2",
-            "password": "new-password"
+            "password": "new-password",
+            "deviceid": ""
         }, follow=True)
 
         assert b"Repositories" in rv.content
