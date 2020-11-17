@@ -18,6 +18,7 @@ import boto3
 import pathlib
 from django.views.decorators.csrf import csrf_exempt
 from authenticate.models import TwoFA, TwoFAUsage
+from helpers import random_word
 
 
 cloudinary.config(
@@ -25,17 +26,6 @@ cloudinary.config(
     api_key = "893778436618783",
     api_secret = "X4LufXPHxvv4hROS3VZWYyR3tIE"
 )
-
-def random_words(n=3):
-    word_site = "http://svnweb.freebsd.org/csrg/share/dict/words?view=co&content-type=text/plain"
-    response = requests.get(word_site)
-    WORDS = response.content.splitlines()
-    words = ""
-    for i in range(n):
-        word = random.choice(WORDS).decode("utf-8")
-        words += word.capitalize()
-    return words
-
 
 def random_str(n):
     s = ""
@@ -99,7 +89,10 @@ def new(request):
         return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['name']}/")
 
     else:
-        return render(request, "main/new.html")
+        return render(request, "main/new.html", {
+            "random_name": random_word()
+        })
+
 
 @login_required(login_url='/auth/login/')
 def profile(request, username):
@@ -411,6 +404,7 @@ def view_all_commits(request, username, repo):
         u = User.objects.get(id=c.user_id)
         p = Profile.objects.get(user_id=u.id)
         data.append([c.commit_id, u.username, p.avatar, c.message, validate_date(c.timestamp.year), validate_date(c.timestamp.month), validate_date(c.timestamp.day), c.timestamp])
+    print(colored(data, "yellow"))
     return render(request, "main/commits.html", {
         "data": data
     })
@@ -423,15 +417,14 @@ def view_single_commit(request, username, repo, commit_id):
     data = []
     for f in files:
         try:
-            file = File.objects.get(pk=f.file)
             try:
-                data.append([file.path, get_s3(file.url).decode("utf-8")])
+                data.append([f.path, get_s3(f.url).decode("utf-8")])
             except:
-                data.append([file.path, file.url, "undecodeable"])
+                data.append([f.path, f.url, "undecodeable"])
         except:
             if f.code == 0:
                 status = "deleted"
-            data.append([f.path, status])
+                data.append([f.path, status])
     return render(request, "main/commit.html", {
         "data": data
     })

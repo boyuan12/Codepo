@@ -13,6 +13,7 @@ import string
 import pathlib
 from termcolor import colored
 import uuid
+import datetime
 
 
 BASE_URL = "https://github-clone-dj.herokuapp.com"
@@ -25,10 +26,15 @@ def random_str(n):
         s += random.choice(string.ascii_letters + string.digits)
     return s
 
-def upload_s3(request):
+def upload_s3(request, data=None, filename=False):
     name = random_str(10)
-    s3.Bucket('githubclone').put_object(Key=f"{name}{pathlib.Path(request.FILES['file'].name).suffix}", Body=request.FILES["file"], ACL="public-read")
-    return f"{name}{pathlib.Path(request.FILES['file'].name).suffix}"
+    if data == None:
+        s3.Bucket('githubclone').put_object(Key=f"{name}{pathlib.Path(request.FILES['file'].name).suffix}", Body=request.FILES["file"], ACL="public-read")
+        return f"{name}{pathlib.Path(request.FILES['file'].name).suffix}"
+    else:
+        s3.Bucket('githubclone').put_object(Key=f"{name}{pathlib.Path(filename).suffix}", Body=data, ACL="public-read")
+        return f"{name}{pathlib.Path(filename).suffix}"
+
 
 def get_s3(name):
     obj = s3.Object("githubclone", f"{name}")
@@ -174,7 +180,7 @@ def upload(request, username, repo):
             c = Commit.objects.get(commit_id=request.POST["commit_id"], branch=b)
 
         f = File.objects.get(repo_id=r.id, filename=request.FILES["file"].name, subdir=subdir, url=f_url, branch=b, path=path+request.FILES["file"].name+"/")
-        Commit_File(commit_id=c.commit_id, file=f.id).save()
+        Commit_File(commit_id=c.commit_id, url=f.url, path=f.path).save()
 
         return JsonResponse({"data": "success"})
 
@@ -317,9 +323,48 @@ def unstar(request, username, repo):
 
 
 def edit(request, username, repo):
-    File.objects.get(path=request.GET["path"])
-    return request.GET["path"]
+    user = User.objects.get(username=username)
+    r = Repository.objects.get(user_id=user.id, name=repo)
+    f = File.objects.get(path=request.GET["path"], repo_id=r.id)
 
+    if request.method == "POST":
+        filename = request.POST["filename"]
+        commit = request.POST["commit-message"]
+        content = request.POST["content"]
+
+        url = upload_s3(request, data=content, filename=filename) 
+        
+        f.delete()
+        File(repo_id=r.id, filename=filename, subdir=f.subdir, url=url, branch=f.branch, path=f.path.replace(f.filename, request.POST["filename"])).save()
+        file = File.objects.get(repo_id=r.id, filename=filename, subdir=f.subdir, url=url, branch=f.branch, path=f.path.replace(f.filename, request.POST["filename"]))
+    
+
+        Commit(commit_id=str(uuid.uuid4()), repo_id=r.id, user_id=user.id, message=commit, branch="master", timestamp=datetime.datetime.now()).save()
+        c = Commit.objects.filter(repo_id=r.id, user_id=user.id, message=commit, branch="master")[::-1][0]
+        print(colored(c.commit_id, "magenta"))
+        Commit_File(commit_id=c.commit_id, url=file.url, path=file.path).save()
+
+        f = File.objects.get(path=request.GET["path"], repo_id=r.id)
+        return HttpResponseRedirect(f"/{username}/{repo}/{f.path}")
+
+    else:
+        content = get_s3(f.url)
+
+        if pathlib.Path(f.filename).suffix == ".py":
+            language = "python"
+        elif pathlib.Path(f.filename).suffix == ".js":
+            language = "javascript"
+        elif pathlib.Path(f.filename).suffix == ".html":
+            language = "html"
+        
+
+        return render(request, "repo/edit.html", {
+            "content": content.decode("utf-8"),
+            "language": language,
+            "filename": f.filename
+        })
+        
+    
 
 def download_zip(request, username, repo):
     r = requests.post("https://github-clone-dj-helper.herokuapp.com/gitt-zip", data={

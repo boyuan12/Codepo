@@ -1,0 +1,37 @@
+{% extends "repo/base.html" %}
+
+{% block main %}
+    <style type="text/css" media="screen">
+        #editor { 
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+        }
+    </style>
+    <div id="editor">{{ content }}</div>
+    <form style="margin-top: 600px;" method="POST" id="form">
+        {% csrf_token %}
+        <input type="filename" value="{{ filename }}" class="form-control" name="filename">
+        <input type="text" placeholder="commit message" class="form-control" name="commit-message" disabled>
+        <button class="btn btn-primary" onclick="submitForm();">Commit Changes</button>
+    </form>
+    <script src="https://pagecdn.io/lib/ace/1.4.12/ace.js" type="text/javascript" charset="utf-8"></script>
+    <script>
+        var editor = ace.edit("editor");
+        editor.setTheme("ace/theme/monokai");
+        editor.session.setMode("ace/mode/{{ language }}");
+
+        function submitForm() {
+            var textarea = document.createElement("textarea");
+            textarea.value = editor.getValue();
+            textarea.setAttribute("name", "content")
+            textarea.style.display = "none";
+            document.getElementById("form").appendChild(textarea);
+            document.getElementById("form").submit();
+        }
+    </script>
+
+
+{% endblock %}
