@@ -91,10 +91,3 @@ class AuthenticationTestCase(TestCase):
         }, follow=True)
 
         assert b"Repositories" in rv.content
-    # def test_verify_an_account(self):
-    #     u = User.objects.get(username="hello")
-    #     code = Verify.objects.get(user_id=u.id)
-
-    #     rv = self.client.get(f"/auth/verify/{code}/", follow=True)
-
-    #     print(rv.content)

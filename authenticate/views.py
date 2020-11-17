@@ -100,7 +100,7 @@ def login_view(request):
         if user1 is not None:
             try:
                 Verify.objects.get(user_id=user1.id, code=0)
-                return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
+                return HttpResponse("Your account is successfully created, but please check your email to verify your account. Click if you need to <a href='/auth/verify/again/'>send the verification mail again</a>.")
             except:
                 try:
                     TwoFAUsage.objects.get(user_id=user1.id)
@@ -334,3 +334,11 @@ def twofa_opt_out(request):
     TwoFAUsage.objects.filter(user_id=request.user.id).delete()
 
     return HttpResponseRedirect("/profile/")
+
+
+def resend_verification_email(request):
+    Verify(user_id=user.id, code=1).save()
+    v = Verify.objects.get(user_id=user.id, code=1)
+    
+    send_mail(user.email, "Code for change your password", f"Hello! Please click on this link to change your password: <a href='{BASE_URL}/auth/forgot-password/{str(v.id)}/'>{BASE_URL}/auth/forgot-password/{str(v.id)}</a> Forgot Password Code: {str(v.id)}")
+    return HttpResponse("Success, please check your email")

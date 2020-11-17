@@ -38,3 +38,13 @@ class RepositoryTestCase(TestCase):
         }, follow=True)
         assert b'testing_branch' in rv.content
 
+    def test_create_new_issue(self):
+        self.login()
+        rv = self.client.post("/testing/testing2/issues/new/", {
+            "title": "sample issue",
+            "content": "# Hi!"
+        })
+        assert b'success' in rv.content
+
+        rv = self.client.post("/testing/testing2/issues/")
+        print(rv.content)

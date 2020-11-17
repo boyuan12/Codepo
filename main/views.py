@@ -404,6 +404,7 @@ def view_all_commits(request, username, repo):
         u = User.objects.get(id=c.user_id)
         p = Profile.objects.get(user_id=u.id)
         data.append([c.commit_id, u.username, p.avatar, c.message, validate_date(c.timestamp.year), validate_date(c.timestamp.month), validate_date(c.timestamp.day), c.timestamp])
+    print(colored(data, "yellow"))
     return render(request, "main/commits.html", {
         "data": data
     })
@@ -416,15 +417,14 @@ def view_single_commit(request, username, repo, commit_id):
     data = []
     for f in files:
         try:
-            file = File.objects.get(pk=f.file)
             try:
-                data.append([file.path, get_s3(file.url).decode("utf-8")])
+                data.append([f.path, get_s3(f.url).decode("utf-8")])
             except:
-                data.append([file.path, file.url, "undecodeable"])
+                data.append([f.path, f.url, "undecodeable"])
         except:
             if f.code == 0:
                 status = "deleted"
-            data.append([f.path, status])
+                data.append([f.path, status])
     return render(request, "main/commit.html", {
         "data": data
     })

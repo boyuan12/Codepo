@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 from main.models import Repository, Directory, File
 from django.http import HttpResponse, JsonResponse
@@ -286,7 +285,7 @@ def commit(request):
             filename = os.path.split(i[1][1:len(i[1])-1])[1]
             File(repo_id=r.id, filename=filename, subdir=subdir, url=i[0], branch=request.POST["branch"], path=i[1]).save()
             f = File.objects.get(repo_id=r.id, filename=filename, subdir=subdir, url=i[0], branch=request.POST["branch"], path=i[1])
-            Commit_File(commit_id=c.commit_id, file=f.id).save()
+            Commit_File(commit_id=c.commit_id, url=f.url, path=f.path).save()
 
     except KeyError:
         pass
@@ -299,7 +298,7 @@ def commit(request):
             f.delete()
             File(repo_id=r.id, filename=os.path.split(i[1][:-1])[1], subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1]).save()
             f = File.objects.get(repo_id=r.id, filename=os.path.split(i[1][:-1])[1], subdir=f.subdir, url=i[0], branch=request.POST["branch"], path=i[1])
-            Commit_File(commit_id=c.commit_id, file=f.id).save()
+            Commit_File(commit_id=c.commit_id, url=f.url, path=f.path).save()
     except KeyError:
         pass
 
@@ -309,7 +308,7 @@ def commit(request):
                 f = File.objects.get(repo_id=r.id, path=i)
                 print(i)
                 f.delete()
-                Commit_File(commit_id=c.commit_id, message=0, path=i).save()
+                Commit_File(commit_id=c.commit_id, code=0, path=i).save()
             except:
                 pass
     except KeyError:
