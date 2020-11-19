@@ -46,5 +46,7 @@ class RepositoryTestCase(TestCase):
         })
         assert b'success' in rv.content
 
-        rv = self.client.post("/testing/testing2/issues/")
-        print(rv.content)
+        rv = self.client.get("/testing/testing2/issues/")
+        assert b'sample issue' in rv.content
+
+    
