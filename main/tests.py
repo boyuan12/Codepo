@@ -1,6 +1,7 @@
 from django.test import Client, TestCase
 from django.contrib.auth.models import User
 from .models import Profile, Repository
+from io import BytesIO
 
 # Create your tests here.
 class RepositoryTestCase(TestCase):
@@ -49,4 +50,16 @@ class RepositoryTestCase(TestCase):
         rv = self.client.get("/testing/testing2/issues/")
         assert b'sample issue' in rv.content
 
-    
+    def test_edit_profile(self):
+        img = BytesIO(b'mybinarydata')
+        img.name = 'myimage.jpg'
+        self.login()
+        rv = self.client.post("/profile/", data={
+            "file": img,
+            "desc": "lorem",
+            "org": "ipsum",
+            "loc": "Earth",
+            "web": "https://github-clone-dj.herokuapp.com"
+        }, follow=True)
+        self.login()
+        print(rv.content)
