@@ -100,3 +100,8 @@ class Commit_File(models.Model):
     url = models.TextField(null=True)
     code = models.IntegerField(null=True) # 0: deleted
     path = models.CharField(null=True, max_length=255)
+
+
+class PyPICredential(models.Model):
+    user_id = models.IntegerField()
+    token = models.CharField(max_length=255)

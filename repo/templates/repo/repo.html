@@ -26,6 +26,7 @@
         hljs.initHighlightingOnLoad();
         hljs.initLineNumbersOnLoad();
     </script>
+        
         <button class="btn btn-primary" onclick="location.assign('/repo/download_zip/{{ username }}/{{ repo }}')">Download as a zip</button>
         <h4>Or <code>gitt -clone {{ username }} {{ repo }}</code></h4>
         {% if username != request.user.username %}
@@ -82,110 +83,125 @@
             </span> -->
             <hr style="margin-top: 50px; z-index: 1; position: relative;">
         </div>
-    <div class="btn dropdown">
-        <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-          Branches
-        </button>
-        <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-            {% for b in branches %}
-                <a class="dropdown-item" href="?b={{ b.name }}">{{ b.name }}</a>
-            {% endfor %}
-
-          <form class="px-4 py-3" action="/new-branch/" method="POST">
-            {% csrf_token %}
-            <div class="form-group">
-                <input type="text" name="name" class="form-control" id="exampleDropdownFormPassword1" placeholder="Create a New Branch">
-                <input type="hidden" name="repo" class="form-control" value="{{ repo }}">
+    <div class="row">
+        <div class="col-9">
+            <div class="btn dropdown">
+                <button class="btn btn-light dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                  Branches
+                </button>
+                <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    {% for b in branches %}
+                        <a class="dropdown-item" href="?b={{ b.name }}">{{ b.name }}</a>
+                    {% endfor %}
+        
+                  <form class="px-4 py-3" action="/new-branch/" method="POST">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <input type="text" name="name" class="form-control" id="exampleDropdownFormPassword1" placeholder="Create a New Branch">
+                        <input type="hidden" name="repo" class="form-control" value="{{ repo }}">
+                    </div>
+                  </form>
+                </div>
             </div>
-          </form>
+            <button type="button" class="btn btn-light" id="file" onclick="location.assign('/repo/{{ username }}/{{ repo }}/upload/')">Add File</button>
+            <!-- <button type="button" class="btn btn-light" id="folder">Add Folder</button> -->
+            <!-- {% if not root %}
+                <button type="button" class="btn btn-danger" id="delete-folder">Delete This Folder</button>
+            {% endif %} -->
+            {% for f in files %}
+                <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M3.75 1.5a.25.25 0 00-.25.25v11.5c0 .138.112.25.25.25h8.5a.25.25 0 00.25-.25V6H9.75A1.75 1.75 0 018 4.25V1.5H3.75zm5.75.56v2.19c0 .138.112.25.25.25h2.19L9.5 2.06zM2 1.75C2 .784 2.784 0 3.75 0h5.086c.464 0 .909.184 1.237.513l3.414 3.414c.329.328.513.773.513 1.237v8.086A1.75 1.75 0 0112.25 15h-8.5A1.75 1.75 0 012 13.25V1.75z"></path></svg><a href="{{ f.filename }}/?b={{ b }}">{{ f.filename }}</a></div>
+            {% endfor %}
+            {% for d in dirs %}
+                <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3h-6.5a.25.25 0 01-.2-.1l-.9-1.2c-.33-.44-.85-.7-1.4-.7h-3.5z"></path></svg> <a  id="{{ d.name }}">{{ d.name }}</a></div>
+                <script>
+                    if (window.location.href[window.location.href.length-1] === "/") {
+                        document.getElementById("{{ d.name }}").setAttribute("href", `${window.location.href.split("?b=")[0]}{{ d.name }}/?b={{ b }}`)
+                    } else {
+                        document.getElementById("{{ d.name }}").setAttribute("href", `${window.location.href.split("?b=")[0]}{{ d.name }}/?b={{ b }}`)
+                    }
+                </script>
+            {% endfor %}
+            <script>
+                var path = window.location.pathname.split("/");
+                console.log(path)
+                for (let i=4; i<path.length; i++) {
+                    var LI = document.createElement("LI");
+                    var string = "/"
+                    for (let j=1; j<i; j++) {
+                        string += path[j] + "/";
+                    }
+                    console.log(string)
+                    LI.innerHTML = `<a href="${string}${path[i]}">${path[i]}</a>`
+                    LI.setAttribute("class", "breadcrumb-item");
+                    document.getElementById("breadcrumb").appendChild(LI);
+                }
+        
+                document.getElementById("folder").onclick = () => {
+                    var origin = window.location.origin;
+                    const pathname = window.location.pathname;
+                    var rest = ""
+                    for (let i=4; i<pathname.split("/").length; i++) {
+                        rest += `/${pathname.split("/")[i]}`;
+                    }
+                    // var branch = location.search.split("?b=")[1]
+                    if (location.search === "") {
+                        var b = ""
+                    } else {
+                        var b = location.search
+                    }
+                    var path = `/${pathname.split("/")[1]}/${pathname.split("/")[2]}/${pathname.split("/")[3]}/folder${rest}${b}`
+                    window.location.replace(`${origin}${path}`)
+                }
+        
+                document.getElementById("file").onclick = () => {
+                    if (location.search === "") {
+                        var b = ""
+                    } else {
+                        var b = location.search
+                    }
+                    var origin = window.location.origin;
+                    const pathname = window.location.pathname;
+                    var rest = ""
+                    for (let i=4; i<pathname.split("/").length; i++) {
+                        rest += `/${pathname.split("/")[i]}`;
+                    }
+                    var path = `/${pathname.split("/")[1]}/${pathname.split("/")[2]}/${pathname.split("/")[3]}/upload${rest}${b}`
+                    window.location.replace(`${origin}${path}`)
+                }
+            </script>
+            <br>
+            {% if readme != None %}
+                <div>
+                    <div style="width: 100%; border: 1px solid black; padding: 10px; border-radius: 10px;">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M4 1.75C4 .784 4.784 0 5.75 0h5.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0114.25 15h-9a.75.75 0 010-1.5h9a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 0110 4.25V1.5H5.75a.25.25 0 00-.25.25v2.5a.75.75 0 01-1.5 0v-2.5zm7.5-.188V4.25c0 .138.112.25.25.25h2.688a.252.252 0 00-.011-.013l-2.914-2.914a.272.272 0 00-.013-.011zM5.72 6.72a.75.75 0 000 1.06l1.47 1.47-1.47 1.47a.75.75 0 101.06 1.06l2-2a.75.75 0 000-1.06l-2-2a.75.75 0 00-1.06 0zM3.28 7.78a.75.75 0 00-1.06-1.06l-2 2a.75.75 0 000 1.06l2 2a.75.75 0 001.06-1.06L1.81 9.25l1.47-1.47z"></path></svg>
+                        <small><b>README.md</b></small>
+                        <br>
+                        <div id="readme"></div>
+                    </div>
+                </div>
+                <script>
+                    var md = new Remarkable();
+                    document.querySelector("#readme").innerHTML = md.render(`{{ readme }}`);
+                </script>
+            {% endif %}
+            <script>
+                // delete folder
+                document.querySelector("#delete-folder").onclick = () => {
+                    var path = window.location.pathname.split("/")
+                    fetch(`/delete-folder`)
+                }
+            </script>
+        </div>
+        <div class="col-3">
+            <h3>Package Deployment</h3>
+            <h4>PyPI</h4>
+            {% if pypi_connected == False %}
+                <p>You need to <a href="/profile/#pypi">connect your PyPI account</a> first.</p>
+            {% else %}
+                <span>Guide</span>
+                <p><a href="/repo/deploy/pypi/{{ username }}/{{ repo }}/">Deploy to PyPI</a></p>
+            {% endif %}
         </div>
     </div>
-    <button type="button" class="btn btn-light" id="file" onclick="location.assign('/repo/{{ username }}/{{ repo }}/upload/')">Add File</button>
-    <!-- <button type="button" class="btn btn-light" id="folder">Add Folder</button> -->
-    <!-- {% if not root %}
-        <button type="button" class="btn btn-danger" id="delete-folder">Delete This Folder</button>
-    {% endif %} -->
-    {% for f in files %}
-        <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M3.75 1.5a.25.25 0 00-.25.25v11.5c0 .138.112.25.25.25h8.5a.25.25 0 00.25-.25V6H9.75A1.75 1.75 0 018 4.25V1.5H3.75zm5.75.56v2.19c0 .138.112.25.25.25h2.19L9.5 2.06zM2 1.75C2 .784 2.784 0 3.75 0h5.086c.464 0 .909.184 1.237.513l3.414 3.414c.329.328.513.773.513 1.237v8.086A1.75 1.75 0 0112.25 15h-8.5A1.75 1.75 0 012 13.25V1.75z"></path></svg><a href="{{ f.filename }}/?b={{ b }}">{{ f.filename }}</a></div>
-    {% endfor %}
-    {% for d in dirs %}
-        <div><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M1.75 1A1.75 1.75 0 000 2.75v10.5C0 14.216.784 15 1.75 15h12.5A1.75 1.75 0 0016 13.25v-8.5A1.75 1.75 0 0014.25 3h-6.5a.25.25 0 01-.2-.1l-.9-1.2c-.33-.44-.85-.7-1.4-.7h-3.5z"></path></svg> <a  id="{{ d.name }}">{{ d.name }}</a></div>
-        <script>
-            if (window.location.href[window.location.href.length-1] === "/") {
-                document.getElementById("{{ d.name }}").setAttribute("href", `${window.location.href.split("?b=")[0]}{{ d.name }}/?b={{ b }}`)
-            } else {
-                document.getElementById("{{ d.name }}").setAttribute("href", `${window.location.href.split("?b=")[0]}{{ d.name }}/?b={{ b }}`)
-            }
-        </script>
-    {% endfor %}
-    <script>
-        var path = window.location.pathname.split("/");
-        console.log(path)
-        for (let i=4; i<path.length; i++) {
-            var LI = document.createElement("LI");
-            var string = "/"
-            for (let j=1; j<i; j++) {
-                string += path[j] + "/";
-            }
-            console.log(string)
-            LI.innerHTML = `<a href="${string}${path[i]}">${path[i]}</a>`
-            LI.setAttribute("class", "breadcrumb-item");
-            document.getElementById("breadcrumb").appendChild(LI);
-        }
 
-        document.getElementById("folder").onclick = () => {
-            var origin = window.location.origin;
-            const pathname = window.location.pathname;
-            var rest = ""
-            for (let i=4; i<pathname.split("/").length; i++) {
-                rest += `/${pathname.split("/")[i]}`;
-            }
-            // var branch = location.search.split("?b=")[1]
-            if (location.search === "") {
-                var b = ""
-            } else {
-                var b = location.search
-            }
-            var path = `/${pathname.split("/")[1]}/${pathname.split("/")[2]}/${pathname.split("/")[3]}/folder${rest}${b}`
-            window.location.replace(`${origin}${path}`)
-        }
-
-        document.getElementById("file").onclick = () => {
-            if (location.search === "") {
-                var b = ""
-            } else {
-                var b = location.search
-            }
-            var origin = window.location.origin;
-            const pathname = window.location.pathname;
-            var rest = ""
-            for (let i=4; i<pathname.split("/").length; i++) {
-                rest += `/${pathname.split("/")[i]}`;
-            }
-            var path = `/${pathname.split("/")[1]}/${pathname.split("/")[2]}/${pathname.split("/")[3]}/upload${rest}${b}`
-            window.location.replace(`${origin}${path}`)
-        }
-    </script>
-    <br>
-    {% if readme != None %}
-        <div>
-            <div style="width: 100%; border: 1px solid black; padding: 10px; border-radius: 10px;">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16"><path fill-rule="evenodd" d="M4 1.75C4 .784 4.784 0 5.75 0h5.586c.464 0 .909.184 1.237.513l2.914 2.914c.329.328.513.773.513 1.237v8.586A1.75 1.75 0 0114.25 15h-9a.75.75 0 010-1.5h9a.25.25 0 00.25-.25V6h-2.75A1.75 1.75 0 0110 4.25V1.5H5.75a.25.25 0 00-.25.25v2.5a.75.75 0 01-1.5 0v-2.5zm7.5-.188V4.25c0 .138.112.25.25.25h2.688a.252.252 0 00-.011-.013l-2.914-2.914a.272.272 0 00-.013-.011zM5.72 6.72a.75.75 0 000 1.06l1.47 1.47-1.47 1.47a.75.75 0 101.06 1.06l2-2a.75.75 0 000-1.06l-2-2a.75.75 0 00-1.06 0zM3.28 7.78a.75.75 0 00-1.06-1.06l-2 2a.75.75 0 000 1.06l2 2a.75.75 0 001.06-1.06L1.81 9.25l1.47-1.47z"></path></svg>
-                <small><b>README.md</b></small>
-                <br>
-                <div id="readme"></div>
-            </div>
-        </div>
-        <script>
-            var md = new Remarkable();
-            document.querySelector("#readme").innerHTML = md.render(`{{ readme }}`);
-        </script>
-    {% endif %}
-    <script>
-        // delete folder
-        document.querySelector("#delete-folder").onclick = () => {
-            var path = window.location.pathname.split("/")
-            fetch(`/delete-folder`)
-        }
-    </script>
 {% endblock %}
