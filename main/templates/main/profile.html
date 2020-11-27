@@ -64,6 +64,21 @@
         {% else %}
             <h4>{{ twofa_message }}, or <a href="/auth/2fa/opt-out">opt-out from 2FA</a>.</h4>
         {% endif %}
+        <hr>
+        <h2>Package Deployment</h2>
+        <h4>Connect with PyPI</h4>
+        <p>To connect with PyPI, first, you need to generate an API Token. Then, copy your API token and paste it to the form below. For security, once you submit, you can't view it again.</p>
+        {% if pypi_created == False %}
+            <form method="POST" action="/connect-pypi/">
+                {% csrf_token %}
+                <div>
+                    <input type="text" class="form-control" placeholder="PyPI API Token" name="token">
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+        {% else %}
+            <b>You already have a PyPI API Token connected, if you want to change, please <a href="/delete/pypi">delete this existing one</a> first.</b>
+        {% endif %}
     </div>
     <script>
         function previewFile() {

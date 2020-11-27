@@ -4,7 +4,7 @@ import os
 import GitHubClone.settings as settings
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.admin import User
-from .models import Repository, File, Directory, Profile, Follows, Branch, Issue, Tags, Issue_Comment, Commit, Commit_File, Profile
+from .models import Repository, File, Directory, Profile, Follows, Branch, Issue, Tags, Issue_Comment, Commit, Commit_File, PyPICredential
 from repo.views import get_s3
 from oauth.models import OAuth, Uri, Token
 import cloudinary
@@ -133,7 +133,7 @@ def profile(request, username):
         "p": p,
         "follows": follows,
         "following": following,
-        "followed": followed
+        "followed": followed,
     })
 
 
@@ -196,12 +196,21 @@ def edit_profile(request):
             print(e)
             twofa = None
 
+        pypi_created = True
+
+        try:
+            PyPICredential.objects.get(user_id=request.user.id)
+        except:
+            pypi_created = False
+
+
         return render(request, "main/profile.html", {
             "p": p,
             "oauth": oauth,
             "uris": uris,
             "twofa": twofa,
-            "twofa_message": twofa_message
+            "twofa_message": twofa_message,
+            "pypi_created": pypi_created
         })
 
 
@@ -428,3 +437,14 @@ def view_single_commit(request, username, repo, commit_id):
     return render(request, "main/commit.html", {
         "data": data
     })
+
+
+def connect_with_pypi(request):
+    token = request.POST["token"]
+    PyPICredential(user_id=request.user.id,  token=token).save()
+    return HttpResponseRedirect("/profile/")
+
+
+def delete_pypi(request):
+    PyPICredential.objects.get(user_id=request.user.id).delete()
+    return HttpResponseRedirect("/profile/")

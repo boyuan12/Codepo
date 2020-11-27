@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth.models import User
 import os
-from main.models import Repository, Directory, File, Branch, Star, Commit, Commit_File
+from main.models import Repository, Directory, File, Branch, Star, Commit, Commit_File, PyPICredential
 import requests
 from GitHubClone.settings import DEBUG
 import boto3
@@ -14,6 +14,7 @@ import pathlib
 from termcolor import colored
 import uuid
 import datetime
+import json
 
 
 BASE_URL = "https://github-clone-dj.herokuapp.com"
@@ -96,7 +97,14 @@ def repo(request, username, repo, path="/"):
             if f.filename.lower() == "readme.md":
                 readme = f
                 readme = get_s3(readme.url).decode("utf-8")
-        print(readme)
+        # print(readme)
+
+        pypi_connected = True
+        try:
+            PyPICredential.objects.get(user_id=request.user.id)
+        except:
+            pypi_connected = False
+
         return render(request, "repo/repo.html", {
             "files": files,
             "dirs": dirs,
@@ -107,7 +115,8 @@ def repo(request, username, repo, path="/"):
             "forked": forked,
             "starred": starred,
             "star_count": star_count,
-            "readme": readme
+            "readme": readme,
+            "pypi_connected": pypi_connected
         })
     except:
         try:
@@ -373,3 +382,26 @@ def download_zip(request, username, repo):
     })
 
     return HttpResponseRedirect(f"https://githubclone.s3-us-west-1.amazonaws.com/{repo}.zip")
+
+
+def pypi_deploy(request, username, repo):
+    try:
+        pypi_password = PyPICredential.objects.get(user_id=request.user.id).token
+    except:
+        return HttpResponse("YOU DON'T HAVE A TOKEN")
+
+    r = requests.post("https://github-clone-dj-helper.herokuapp.com/upload-pypi", data={
+        "username": username,
+        "repo": repo,
+        "pypi_username": "__token__",
+        "pypi_password": pypi_password,
+    })
+
+    print(r.text)
+    data = json.loads(str(r.text))
+
+    try:
+        data["url"]
+        return HttpResponse(data["url"])
+    except:
+        return HttpResponse(data["error"])

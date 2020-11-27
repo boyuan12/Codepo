@@ -1,3 +1,4 @@
+from main.views import connect_with_pypi, delete_pypi
 from django.urls import path
 from . import views
 
@@ -9,6 +10,8 @@ urlpatterns = [
     path("unfollow/", views.unfollow_user),
     path("create-oauth-app/", views.create_oauth_app),
     path("new-branch/", views.create_new_branch),
+    path("connect-pypi/", views.connect_with_pypi), 
+    path("delete/pypi/", views.delete_pypi),
     path("<str:username>/", views.profile),
     path("<str:username>/<str:repo>/settings/", views.repo_settings),
     path("<str:username>/<str:repo>/issues/", views.repo_issues),
