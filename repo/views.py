@@ -1,4 +1,3 @@
-  
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
@@ -16,6 +15,7 @@ from termcolor import colored
 import uuid
 import datetime
 import json
+from .models import PyPIDeploy
 
 
 BASE_URL = "https://github-clone-dj.herokuapp.com"
@@ -106,9 +106,23 @@ def repo(request, username, repo, path="/"):
         except:
             pypi_connected = False
 
+        try:
+            p = PyPIDeploy.objects.filter(user_id=request.user.id).order_by('-id')[0]
+            pypi_url = p.url
+            pypi_deploy_version = p.url.split("/")[5]
+            pypi_deploy_date = p.timestamp
+            pypi_project_name = p.project
+        except:
+            pass
+        
+        try:
+            pypi_info = [pypi_url, pypi_deploy_version, pypi_deploy_date, pypi_project_name]
+        except:
+            pypi_info = None
+
         return render(request, "repo/repo.html", {
             "files": files,
-            "dirs": dirs,
+            "irs": dirs,
             "branches": branches,
             "b": b,
             "repo": repo,
@@ -117,7 +131,8 @@ def repo(request, username, repo, path="/"):
             "starred": starred,
             "star_count": star_count,
             "readme": readme,
-            "pypi_connected": pypi_connected
+            "pypi_connected": pypi_connected,
+            "pypi_info": pypi_info
         })
     except:
         try:
@@ -401,8 +416,11 @@ def pypi_deploy(request, username, repo):
     print(r.text)
     data = json.loads(str(r.text))
 
+    r = Repository.objects.get(user_id=request.user.id, name=repo)
+    c = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)
+
     try:
-        data["url"]
+        PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, url=data["url"]).save()
         return HttpResponse(data["url"])
     except:
         return HttpResponse(data["error"])
