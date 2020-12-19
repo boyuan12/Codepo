@@ -122,7 +122,7 @@ def repo(request, username, repo, path="/"):
 
         return render(request, "repo/repo.html", {
             "files": files,
-            "irs": dirs,
+            "dirs": dirs,
             "branches": branches,
             "b": b,
             "repo": repo,
