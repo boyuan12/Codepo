@@ -5,3 +5,4 @@ dist/
 gitt.egg-info/
 .env
 .vscode/
+start.sh
