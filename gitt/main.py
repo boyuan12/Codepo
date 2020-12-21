@@ -8,8 +8,8 @@ import uuid
 import json
 import os
 
-S3_ACCESS_KEY_ID = requests.get("https://pastebin.com/raw/9WDZMAc1").text.split("\r\n")[0]
-S3_SECRET_ACCESS_KEY = requests.get("https://pastebin.com/raw/9WDZMAc1").text.split("\r\n")[1]
+S3_ACCESS_KEY_ID = requests.get("https://pastebin.com/raw/YfUv7kYz").text.split("\r\n")[0]
+S3_SECRET_ACCESS_KEY = requests.get("https://pastebin.com/raw/YfUv7kYz").text.split("\r\n")[1]
 
 s3 = boto3.resource("s3", aws_access_key_id=S3_ACCESS_KEY_ID, aws_secret_access_key=S3_SECRET_ACCESS_KEY)
 
