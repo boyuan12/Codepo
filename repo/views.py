@@ -414,13 +414,13 @@ def pypi_deploy(request, username, repo):
     })
 
     print(r.text)
-    data = json.loads(str(r.text))
+    return HttpResponse(r.text)
 
-    r = Repository.objects.get(user_id=request.user.id, name=repo)
-    c = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)
+    # r = Repository.objects.get(user_id=request.user.id, name=repo)
+    # c = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)
 
-    try:
-        PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, url=data["url"]).save()
-        return HttpResponse(data["url"])
-    except:
-        return HttpResponse(data["error"])
+    # try:
+    #     PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, url=data["url"]).save()
+    #     return HttpResponse(data["url"])
+    # except:
+    #     return HttpResponse(data["error"])
