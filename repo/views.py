@@ -413,10 +413,11 @@ def pypi_deploy(request, username, repo):
         "pypi_password": pypi_password,
     })
 
+    data = str(r.text)
+
     r = Repository.objects.get(user_id=request.user.id, name=repo)
     c = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)[::-1][0]
-
-    data = str(r.text)
+    
     text = ""
     if "Error" in data:
         text = data.split("Error")[1]
