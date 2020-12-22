@@ -112,12 +112,14 @@ def repo(request, username, repo, path="/"):
             pypi_deploy_version = p.url.split("/")[5]
             pypi_deploy_date = p.timestamp
             pypi_project_name = p.project
-        except:
+        except Exception as e:
+            print(colored(str(e), "green"))
             pass
         
         try:
             pypi_info = [pypi_url, pypi_deploy_version, pypi_deploy_date, pypi_project_name]
-        except:
+        except Exception as e:
+            print(colored(str(e), "green"))
             pypi_info = None
 
         return render(request, "repo/repo.html", {
