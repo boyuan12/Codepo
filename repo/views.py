@@ -107,7 +107,7 @@ def repo(request, username, repo, path="/"):
             pypi_connected = False
 
         try:
-            p = PyPIDeploy.objects.filter(user_id=request.user.id).order_by('-id')[0]
+            p = PyPIDeploy.objects.filter(user_id=request.user.id)[::-1][0]
             pypi_url = p.url
             pypi_deploy_version = p.version
             pypi_deploy_date = p.timestamp
@@ -425,6 +425,7 @@ def pypi_deploy(request, username, repo):
         text = data.split("Error")[1]
         PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, success=False, message=text).save()
     else:
+        print(data)
         print(data.split("View at:\n")[1])
         url = data.split("View at:\n")[1].split("\n")[0]
         project = data.split("View at:\n")[1].split("\n")[0].split("/")[4]
