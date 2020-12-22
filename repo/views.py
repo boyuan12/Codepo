@@ -413,8 +413,11 @@ def pypi_deploy(request, username, repo):
         "pypi_password": pypi_password,
     })
 
-    print(r.text)
-    return HttpResponse(r.text)
+    data = str(r.text)
+    if "Error" in data:
+        return HttpResponse(data.split("Error")[1])
+    else:
+        return HttpResponse(r.text)
 
     # r = Repository.objects.get(user_id=request.user.id, name=repo)
     # c = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)
