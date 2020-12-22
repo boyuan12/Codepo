@@ -397,11 +397,5 @@ def pypi_deploy(request, username, repo):
         "pypi_password": pypi_password,
     })
 
-    print(r.text)
-    data = json.loads(str(r.text))
-
-    try:
-        data["url"]
-        return HttpResponse(data["url"])
-    except:
-        return HttpResponse(data["error"])
+    text = r.text
+    return HttpResponse(text)
