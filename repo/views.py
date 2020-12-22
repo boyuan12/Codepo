@@ -425,9 +425,9 @@ def pypi_deploy(request, username, repo):
         text = data.split("Error")[1]
         PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, success=False, message=text).save()
     else:
-        url = str.split("View at:\n")[1].split("\n")[0]
-        project = str.split("View at:\n")[1].split("\n")[0].split("/")[4]
-        version = str.split("View at:\n")[1].split("\n")[0].split("/")[5]
+        url = data.split("View at:\n")[1].split("\n")[0]
+        project = data.split("View at:\n")[1].split("\n")[0].split("/")[4]
+        version = data.split("View at:\n")[1].split("\n")[0].split("/")[5]
     
         PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, success=True, url=url, project=project, version=version).save()
 
