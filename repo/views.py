@@ -109,7 +109,7 @@ def repo(request, username, repo, path="/"):
         try:
             p = PyPIDeploy.objects.filter(user_id=request.user.id).order_by('-id')[0]
             pypi_url = p.url
-            pypi_deploy_version = p.url.split("/")[5]
+            pypi_deploy_version = p.version
             pypi_deploy_date = p.timestamp
             pypi_project_name = p.project
         except Exception as e:
