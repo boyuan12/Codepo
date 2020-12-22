@@ -413,17 +413,19 @@ def pypi_deploy(request, username, repo):
         "pypi_password": pypi_password,
     })
 
+    r = Repository.objects.get(user_id=request.user.id, name=repo)
+    c = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)[::-1][0]
+
     data = str(r.text)
+    text = ""
     if "Error" in data:
-        return HttpResponse(data.split("Error")[1])
+        text = data.split("Error")[1]
+        PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, success=False, message=data["error"]).save()
     else:
-        return HttpResponse(r.text)
+        url = str.split("View at:\n")[1].split("\n")[0]
+        project = str.split("View at:\n")[1].split("\n")[0].split("/")[4]
+        version = str.split("View at:\n")[1].split("\n")[0].split("/")[5]
+    
+        PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, success=True, url=url, project=project, version=version).save()
 
-    # r = Repository.objects.get(user_id=request.user.id, name=repo)
-    # c = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)
-
-    # try:
-    #     PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, url=data["url"]).save()
-    #     return HttpResponse(data["url"])
-    # except:
-    #     return HttpResponse(data["error"])
+    return HttpResponseRedirect(f"/repo/{request.user.username}/{repo}")
