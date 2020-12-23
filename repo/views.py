@@ -16,6 +16,7 @@ import uuid
 import datetime
 import json
 from .models import PyPIDeploy
+from termcolor import colored
 
 
 BASE_URL = "https://github-clone-dj.herokuapp.com"
@@ -425,7 +426,7 @@ def pypi_deploy(request, username, repo):
         text = data.split("Error")[1]
         PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, success=False, message=text).save()
     else:
-        print(data)
+        print(colored(data, "yellow"))
         print(data.split("View at:\n")[1])
         url = data.split("View at:\n")[1].split("\n")[0]
         project = data.split("View at:\n")[1].split("\n")[0].split("/")[4]
