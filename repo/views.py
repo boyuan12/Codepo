@@ -427,10 +427,10 @@ def pypi_deploy(request, username, repo):
         PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, success=False, message=text).save()
     else:
         print(colored(data, "yellow"))
-        print(data.split("View at:\n"))
-        url = data.split("View at:\n")[1].split("\n")[0]
-        project = data.split("View at:\n")[1].split("\n")[0].split("/")[4]
-        version = data.split("View at:\n")[1].split("\n")[0].split("/")[5]
+        print(data.split("View at:\\n"))
+        url = data.split("View at:\\n")[1].split("\\n")[0]
+        project = data.split("View at:\\n")[1].split("\\n")[0].split("/")[4]
+        version = data.split("View at:\\n")[1].split("\\n")[0].split("/")[5]
     
         PyPIDeploy(user_id=request.user.id, commit_id=c.commit_id, success=True, url=url, project=project, version=version).save()
 
