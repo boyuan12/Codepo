@@ -1,0 +1,18 @@
+{% extends "repo/base.html" %}
+
+{% block title %}
+    Sync Repository With GitHub
+{% endblock %}
+
+{% block main %}
+    <h1>From GitHub to CodeHub</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="input-group mb-3">
+            <input type="text" class="form-control" placeholder="Username" aria-label="Username" name="username">
+            <span class="input-group-text">/</span>
+            <input type="text" class="form-control" placeholder="Repository" aria-label="Repository" name="repo">
+          </div>          
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}
