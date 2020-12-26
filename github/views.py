@@ -9,11 +9,12 @@ from main.models import Repository, File, Directory
 import json
 from django.contrib.auth.models import User
 from repo.views import get_s3, upload_s3
+import os
 
 
 # Create your views here.
-GITHUB_CLIENT_ID = "b805737145f943a6bce4"
-GITHUB_CLIENT_SECRET = "4f1ea90e6be59e240e4bfcade8b3f087e6b47ad9"
+GITHUB_CLIENT_ID = os.getenv("GITHUB_CLIENT_ID")
+GITHUB_CLIENT_SECRET = os.getenv("GITHUB_CLIENT_SECRET")
 
 def files_in_folder(gh_access_token, path, username, repo, repo_id, request=None):
     r = requests.get(f"https://api.github.com/repos/{username}/{repo}/contents/" + path, headers={
