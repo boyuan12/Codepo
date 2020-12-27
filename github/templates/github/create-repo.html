@@ -1,0 +1,21 @@
+{% extends "repo/base.html" %}
+
+{% block title %}
+    Sync Repository With GitHub
+{% endblock %}
+
+{% block main %}
+    <h1>Sync {{ repo }} to GitHub</h1>
+    <form method="POST">
+        {% csrf_token %}
+        <label for="basic-url" class="form-label">Your vanity URL</label>
+        <div class="input-group mb-3">
+          <span class="input-group-text" id="basic-addon3">
+              <img src="{{ avatar_url }}" width="20px" height="20px">
+              {{ gh_username }}
+          </span>
+          <input type="text" class="form-control" id="basic-url" aria-describedby="basic-addon3" name="name" value="{{ repo }}">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}

@@ -48,6 +48,7 @@ ALLOWED_HOSTS = ["github-clone-dj.herokuapp.com"]
 # Application definition
 
 INSTALLED_APPS = [
+    'github',
     "pages",
     "oauth",
     "api",

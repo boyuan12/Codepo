@@ -24,4 +24,5 @@ urlpatterns = [
     path("api/", include("api.urls")),
     path("oauth/", include("oauth.urls")),
     path("p/", include("pages.urls")),
+    path("github/", include("github.urls")),
 ]

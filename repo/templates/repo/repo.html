@@ -202,6 +202,11 @@
                 <p><a href="/repo/deploy/pypi/{{ username }}/{{ repo }}/">Deploy to PyPI</a></p>
                 {{ pypi_info }}
             {% endif %}
+            <hr>
+            <a class="btn btn-outline-dark" href="/github/authenticate/?next=/github/create-repo/{{ username }}/{{ repo }}/" role="button" style="text-transform:none">
+                <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Google sign-in" src="https://upload.wikimedia.org/wikipedia/commons/9/95/Font_Awesome_5_brands_github.svg">
+                Sync with GitHub
+            </a>
         </div>
     </div>
 
