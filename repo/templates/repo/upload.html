@@ -45,6 +45,8 @@
                         traverse(entry);
                     }
                 }
+                console.log("finished uploading all files")
+                location.assign("/repo/{{ username }}/{{ repo }}/")
             }
         }, false);
 

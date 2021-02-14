@@ -6,3 +6,4 @@ gitt.egg-info/
 .env
 .vscode/
 start.sh
+.venv/

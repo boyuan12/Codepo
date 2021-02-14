@@ -1,4 +1,3 @@
-
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from main.models import Repository, Directory, File
@@ -13,8 +12,15 @@ s3 = boto3.resource("s3", aws_access_key_id=os.getenv("S3_ACCESS_KEY_ID"), aws_s
 
 def get_s3(name):
     obj = s3.Object("githubclone", f"{name}")
+    print(obj.get())
     body = obj.get()['Body'].read()
     return body
+
+
+def get_s3_file_contenttype(name):
+    obj = s3.Object("githubclone", name)
+    return obj.get()["ResponseMetadata"]["HTTPHeaders"]["content-type"]
+
 
 def index(request, username, repo, path="/"):
     try:
@@ -49,9 +55,10 @@ def index(request, username, repo, path="/"):
         html = html[len(html)-1] + ".html"
         f = File.objects.get(repo_id=r.id, path=path.replace(f"/{html}", ""), branch=b)
         content = get_s3(f.url)
-        response = HttpResponse(content.decode("utf-8"))
+        response = HttpResponse(content) # .decode("utf-8")
         if pathlib.Path(f.filename).suffix.split('.')[1] == "js":
             response["Content-Type"] = f"text/javascript"
         else:
+            content_type = get_s3_file_contenttype(f.url)
             response["Content-Type"] = f"text/{pathlib.Path(f.filename).suffix.split('.')[1]}" # pathlib
         return response

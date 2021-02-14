@@ -5,7 +5,7 @@ import requests
 from requests.api import get
 from termcolor import colored
 from helpers import base64_decode, base64_encode
-from main.models import Repository, File, Directory
+from main.models import Repository, File, Directory, Branch
 import json
 from django.contrib.auth.models import User
 from repo.views import get_s3, upload_s3
@@ -112,6 +112,8 @@ def sync_repo(request):
         
         print(repo_id)
         files_in_folder(request.session["github_access_token"], "", request.POST["username"], request.POST["repo"], repo_id)
+
+        Branch(repo_id=repo_id, name="master").save()
 
         return HttpResponseRedirect(f"/repo/{request.user.username}/{request.POST['repo']}")
 
