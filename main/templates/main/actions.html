@@ -1,0 +1,25 @@
+{% extends "repo/base.html" %}
+
+{% block main %}
+    <h1>Actions</h1>
+    <h3>Total Workflow Runs: {{ workflows|length }}</h3>
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">#</th>
+            <th scope="col">Commit</th>
+            <th scope="col">Branch</th>
+            <th scope="col">Timestamp</th>
+            <th scope="col">Status</th>
+        </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th scope="row">1</th>
+            <td>Mark</td>
+            <td>Otto</td>
+            <td>@mdo</td>
+          </tr>
+        </tbody>
+      </table>
+{% endblock %}

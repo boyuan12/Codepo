@@ -12,6 +12,7 @@ urlpatterns = [
     path("unstar/<str:username>/<str:repo>/", views.unstar),
     path("download_zip/<str:username>/<str:repo>/", views.download_zip),
     path("deploy/pypi/<str:username>/<str:repo>/", views.pypi_deploy),
+    path("deploy/heroku/<str:username>/<str:repo>/", views.heroku_deployment),
     path("<str:username>/<str:repo>/upload/", views.upload),
     # path("<str:username>/<str:repo>/upload/<path:url>/", views.upload),
     path("<str:username>/<str:repo>/", views.repo),
