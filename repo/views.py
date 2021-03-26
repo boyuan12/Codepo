@@ -1,3 +1,4 @@
+from repo.models import HerokuDeploy
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
@@ -417,11 +418,11 @@ def heroku_deployment(request, username, repo):
         # })
 
         # print(data.json())
-        if DEBUG == False:
+        if DEBUG:
             url = "https://storage.cloudconvert.com/tasks/8302b237-0025-472f-b483-c4e4b933d3f8/demo-flask.tar.gz?AWSAccessKeyId=cloudconvert-production&Expires=1614926654&Signature=VgatIXf0WaUFJcgFD6wx3oC7GaE%3D&response-content-disposition=attachment%3B%20filename%3D%22demo-flask.tar.gz%22&response-content-type=application%2Fgzip"
         else:
             requests.get(f"https://github-clone-dj.herokuapp.com/repo/download_zip/{username}/{repo}")
-            url = convert_file(f"https://githubclone.s3-us-west-1.amazonaws.com/{repo}.py", "gzip")
+            url = convert_file(f"https://githubclone.s3-us-west-1.amazonaws.com/{repo}", "gzip")
 
         data = requests.post(f"https://api.heroku.com/apps/{request.POST['name']}/builds", data=json.dumps({
             "source_blob": {
@@ -434,8 +435,11 @@ def heroku_deployment(request, username, repo):
             "Accept": "application/vnd.heroku+json; version=3",
         })
 
+        r = Repository.objects.get(user_id=request.user.id, name=repo)
 
-        requests.get(f"https://github-clone-dj.herokuapp.com/repo/download_zip/{username}/{repo}/")
+        commit = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)[-1]
+
+        HerokuDeploy(user_id=request.user.id, repo_id=r.id, commit_id=commit.id).save()
         
         return JsonResponse(data.json())
 
