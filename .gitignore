@@ -4,3 +4,6 @@ pythonenv3.8/
 dist/
 gitt.egg-info/
 .env
+start.sh
+.venv
+.vscode
