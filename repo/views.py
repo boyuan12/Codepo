@@ -408,16 +408,16 @@ def pypi_deploy(request, username, repo):
 
 def heroku_deployment(request, username, repo):
     if request.method == "POST":
-        # data = requests.post("https://api.heroku.com/apps", data={
-        #     "name": request.POST["name"],
-        #     "region": "us", # need to change this later
-        #     "stack": "heroku-20"
-        # }, headers={
-        #     "Authorization": f"Bearer {request.session['HEROKU_ACCESS_TOKEN']}",
-        #     "Accept": "application/vnd.heroku+json; version=3"
-        # })
+        data = requests.post("https://api.heroku.com/apps", data={
+            "name": request.POST["name"],
+            "region": "us", # need to change this later
+            "stack": "heroku-20"
+        }, headers={
+            "Authorization": f"Bearer {request.session['HEROKU_ACCESS_TOKEN']}",
+            "Accept": "application/vnd.heroku+json; version=3"
+        })
 
-        # print(data.json())
+        print(data.json())
         if DEBUG:
             url = "https://storage.cloudconvert.com/tasks/8302b237-0025-472f-b483-c4e4b933d3f8/demo-flask.tar.gz?AWSAccessKeyId=cloudconvert-production&Expires=1614926654&Signature=VgatIXf0WaUFJcgFD6wx3oC7GaE%3D&response-content-disposition=attachment%3B%20filename%3D%22demo-flask.tar.gz%22&response-content-type=application%2Fgzip"
         else:
