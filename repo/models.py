@@ -11,3 +11,9 @@ class PyPIDeploy(models.Model):
     success = models.BooleanField()
     message = models.TextField(null=True)
     version = models.CharField(max_length=10, null=True)
+
+class HerokuDeploy(models.Model):
+    user_id = models.IntegerField()
+    repo_id = models.IntegerField()
+    commit_id = models.UUIDField()
+    timestamp = models.DateTimeField(default=timezone.now)

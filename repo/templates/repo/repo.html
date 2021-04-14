@@ -22,6 +22,7 @@
     <script src="//cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js"></script>
     <script src="//cdn.jsdelivr.net/npm/highlightjs-line-numbers.js@2.8.0/dist/highlightjs-line-numbers.min.js"></script>
     <script src="https://cdn.jsdelivr.net/remarkable/1.7.1/remarkable.min.js"></script>
+    <link rel="stylesheet" href="https://raw.githubusercontent.com/abouet/bootstrap-social/master/css/bootstrap-social.css">
     <script>
         hljs.initHighlightingOnLoad();
         hljs.initLineNumbersOnLoad();
@@ -200,13 +201,21 @@
             {% else %}
                 <span>Guide</span>
                 <p><a href="/repo/deploy/pypi/{{ username }}/{{ repo }}/">Deploy to PyPI</a></p>
-                {{ pypi_info }}
             {% endif %}
             <hr>
             <a class="btn btn-outline-dark" href="/github/authenticate/?next=/github/create-repo/{{ username }}/{{ repo }}/" role="button" style="text-transform:none">
                 <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Google sign-in" src="https://upload.wikimedia.org/wikipedia/commons/9/95/Font_Awesome_5_brands_github.svg">
                 Sync with GitHub
             </a>
+            <hr>
+            {% for f in files %}
+                {% if f.filename == 'Procfile' %}
+                    <a class="btn btn-outline-info" href="/auth/heroku/?next=/repo/deploy/heroku/{{ username }}/{{ repo }}" role="button" style="text-transform:none">
+                        <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Heroku sign-in" src="https://brand.heroku.com/static/media/heroku-logo-stroke.aa0b53be.svg">
+                        Sync with Heroku
+                    </a>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
 

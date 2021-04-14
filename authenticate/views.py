@@ -14,6 +14,7 @@ import datetime
 import httpagentparser
 from termcolor import colored
 from GitHubClone.settings import DEBUG
+import requests
 
 
 if DEBUG:
@@ -37,6 +38,9 @@ def get_client_ip(request):
 account_sid = os.getenv("TWILIO_ACCOUNT_SID")
 auth_token = os.getenv("TWILIO_AUTH_TOKEN")
 client = Client(account_sid, auth_token)
+
+HEROKU_CLIENT_ID = os.getenv("HEROKU_CLIENT_ID")
+HEROKU_CLIENT_SECRET = os.getenv("HEROKU_CLIENT_SECRET")
 
 # Create your views here.
 def register(request):
@@ -100,7 +104,7 @@ def login_view(request):
         if user1 is not None:
             try:
                 Verify.objects.get(user_id=user1.id, code=0)
-                return HttpResponse("Your account is successfully created, but please check your email to verify your account.")
+                return HttpResponse("Your account is successfully created, but please check your email to verify your account. Click if you need to <a href='/auth/verify/again/'>send the verification mail again</a>.")
             except:
                 try:
                     TwoFAUsage.objects.get(user_id=user1.id)
@@ -334,3 +338,34 @@ def twofa_opt_out(request):
     TwoFAUsage.objects.filter(user_id=request.user.id).delete()
 
     return HttpResponseRedirect("/profile/")
+
+
+def resend_verification_email(request):
+    Verify(user_id=request.user.id, code=1).save()
+    v = Verify.objects.get(user_id=request.user.id, code=1)
+    
+    send_mail(request.user.email, "Code for change your password", f"Hello! Please click on this link to change your password: <a href='{BASE_URL}/auth/forgot-password/{str(v.id)}/'>{BASE_URL}/auth/forgot-password/{str(v.id)}</a> Forgot Password Code: {str(v.id)}")
+    return HttpResponse("Success, please check your email")
+
+
+def login_with_heroku(request):
+    if request.GET.get("next"):
+        request.session["h_next"] = request.GET.get("next")
+    return HttpResponseRedirect(f"https://id.heroku.com/oauth/authorize?client_id={HEROKU_CLIENT_ID}&response_type=code&scope=global&state=abcd")
+
+
+def heroku_callback(request):
+    data = requests.post("https://id.heroku.com/oauth/token", data={
+        "grant_type": "authorization_code",
+        "code": request.GET.get("code"),
+        "client_secret": HEROKU_CLIENT_SECRET
+    })
+    
+    try:
+        request.session["HEROKU_ACCESS_TOKEN"] = data.json()["access_token"]
+    except KeyError:
+        print(data.json())
+
+    if request.session.get("h_next"):
+        return HttpResponseRedirect(request.session.get("h_next"))
+    return HttpResponseRedirect("/")

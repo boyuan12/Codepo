@@ -14,4 +14,6 @@ urlpatterns = [
     path("2fa/devices/verify/", views.twofa_device_verify),
     path("2fa/email/", views.twofa_email),
     path("2fa/opt-out/", views.twofa_opt_out),
+    path("heroku/", views.login_with_heroku),
+    path("heroku/callback/", views.heroku_callback),
 ]

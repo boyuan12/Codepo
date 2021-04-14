@@ -1,0 +1,13 @@
+{% extends "repo/base.html" %}
+
+{% block main %}
+    <h1>Deploy to Heroku</h1>
+    <h3>Deploy your {{ repo }} to Heroku</h3>
+    <form method="POST">
+        {% csrf_token %}
+        <div>
+            <input type="text" name="name" placeholder="Heroku App Name" class="form-control">
+        </div>
+        <button type="submit" class="btn btn-primary">Submit</button>
+    </form>
+{% endblock %}
