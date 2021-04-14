@@ -438,7 +438,7 @@ def heroku_deployment(request, username, repo):
 
         r = Repository.objects.get(user_id=request.user.id, name=repo)
 
-        commit = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)[::-1]
+        commit = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)[::-1][0]
 
         HerokuDeploy(user_id=request.user.id, repo_id=r.id, commit_id=commit.id).save()
         
