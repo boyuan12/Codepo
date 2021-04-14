@@ -424,6 +424,7 @@ def heroku_deployment(request, username, repo):
             requests.get(f"https://github-clone-dj.herokuapp.com/repo/download_zip/{username}/{repo}")
             url = convert_file(f"https://githubclone.s3-us-west-1.amazonaws.com/{repo}.zip", "tar.gz")
 
+        print(request.session['HEROKU_ACCESS_TOKEN'])
         data = requests.post(f"https://api.heroku.com/apps/{request.POST['name']}/builds", data=json.dumps({
             "source_blob": {
                 "checksum": None,
@@ -437,7 +438,7 @@ def heroku_deployment(request, username, repo):
 
         r = Repository.objects.get(user_id=request.user.id, name=repo)
 
-        commit = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)[-1]
+        commit = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)[::-1]
 
         HerokuDeploy(user_id=request.user.id, repo_id=r.id, commit_id=commit.id).save()
         
