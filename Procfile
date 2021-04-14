@@ -1,1 +1,1 @@
-web: gunicorn GitHubClone.wsgi —-log-file -
+web: gunicorn GitHubClone.wsgi —-log-file --timeout 120
