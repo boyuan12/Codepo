@@ -421,7 +421,7 @@ def heroku_deployment(request, username, repo):
         if DEBUG:
             url = "https://storage.cloudconvert.com/tasks/8302b237-0025-472f-b483-c4e4b933d3f8/demo-flask.tar.gz?AWSAccessKeyId=cloudconvert-production&Expires=1614926654&Signature=VgatIXf0WaUFJcgFD6wx3oC7GaE%3D&response-content-disposition=attachment%3B%20filename%3D%22demo-flask.tar.gz%22&response-content-type=application%2Fgzip"
         else:
-            requests.get(f"https://github-clone-dj.herokuapp.com/repo/download_zip/{username}/{repo}")
+            print(requests.get(f"https://codepo.xyz/repo/download_zip/{username}/{repo}").text)
             url = convert_file(f"https://githubclone.s3-us-west-1.amazonaws.com/{repo}.zip", "tar.gz")
 
         print(request.session['HEROKU_ACCESS_TOKEN'])
