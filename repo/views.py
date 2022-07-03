@@ -1,3 +1,4 @@
+from repo.models import HerokuDeploy
 from django.shortcuts import render
 from django.http import HttpResponse, JsonResponse, HttpResponseRedirect, Http404
 from django.contrib.auth.decorators import login_required
@@ -15,6 +16,10 @@ from termcolor import colored
 import uuid
 import datetime
 import json
+from helpers import convert_file
+# import cloudconvert
+ 
+# cloudconvert.configure(api_key=os.getenv("CLOUDCONVERT_API_KEY"), sandbox=False)
 
 
 BASE_URL = "https://github-clone-dj.herokuapp.com"
@@ -399,3 +404,48 @@ def pypi_deploy(request, username, repo):
 
     text = r.text
     return HttpResponse(text)
+
+
+def heroku_deployment(request, username, repo):
+    if request.method == "POST":
+        # data = requests.post("https://api.heroku.com/apps", data={
+        #     "name": request.POST["name"],
+        #     "region": "us", # need to change this later
+        #     "stack": "heroku-20"
+        # }, headers={
+        #     "Authorization": f"Bearer {request.session['HEROKU_ACCESS_TOKEN']}",
+        #     "Accept": "application/vnd.heroku+json; version=3"
+        # })
+
+        # print(data.json())
+        if DEBUG:
+            url = "https://storage.cloudconvert.com/tasks/8302b237-0025-472f-b483-c4e4b933d3f8/demo-flask.tar.gz?AWSAccessKeyId=cloudconvert-production&Expires=1614926654&Signature=VgatIXf0WaUFJcgFD6wx3oC7GaE%3D&response-content-disposition=attachment%3B%20filename%3D%22demo-flask.tar.gz%22&response-content-type=application%2Fgzip"
+        else:
+            requests.get(f"https://github-clone-dj.herokuapp.com/repo/download_zip/{username}/{repo}")
+            url = convert_file(f"https://githubclone.s3-us-west-1.amazonaws.com/{repo}", "gzip")
+
+        data = requests.post(f"https://api.heroku.com/apps/{request.POST['name']}/builds", data=json.dumps({
+            "source_blob": {
+                "checksum": None,
+                "url": url,
+                "version": None,
+            }}), headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {request.session['HEROKU_ACCESS_TOKEN']}",
+            "Accept": "application/vnd.heroku+json; version=3",
+        })
+
+        r = Repository.objects.get(user_id=request.user.id, name=repo)
+
+        commit = Commit.objects.filter(user_id=request.user.id, repo_id=r.id)[-1]
+
+        HerokuDeploy(user_id=request.user.id, repo_id=r.id, commit_id=commit.id).save()
+        
+        return JsonResponse(data.json())
+
+    else:
+        return render(request, "repo/heroku-init.html", {
+            "repo": repo
+        })
+
+

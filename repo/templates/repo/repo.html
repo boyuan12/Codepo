@@ -207,6 +207,15 @@
                 <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Google sign-in" src="https://upload.wikimedia.org/wikipedia/commons/9/95/Font_Awesome_5_brands_github.svg">
                 Sync with GitHub
             </a>
+            <hr>
+            {% for f in files %}
+                {% if f.filename == 'Procfile' %}
+                    <a class="btn btn-outline-info" href="/auth/heroku/?next=/repo/deploy/heroku/{{ username }}/{{ repo }}" role="button" style="text-transform:none">
+                        <img width="20px" style="margin-bottom:3px; margin-right:5px" alt="Heroku sign-in" src="https://brand.heroku.com/static/media/heroku-logo-stroke.aa0b53be.svg">
+                        Sync with Heroku
+                    </a>
+                {% endif %}
+            {% endfor %}
         </div>
     </div>
 
