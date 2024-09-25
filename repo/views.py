@@ -35,15 +35,15 @@ def random_str(n):
 def upload_s3(request, data=None, filename=False):
     name = random_str(10)
     if data == None:
-        s3.Bucket('githubclone').put_object(Key=f"{name}{pathlib.Path(request.FILES['file'].name).suffix}", Body=request.FILES["file"], ACL="public-read")
+        s3.Bucket('codepo').put_object(Key=f"{name}{pathlib.Path(request.FILES['file'].name).suffix}", Body=request.FILES["file"], ACL="public-read")
         return f"{name}{pathlib.Path(request.FILES['file'].name).suffix}"
     else:
-        s3.Bucket('githubclone').put_object(Key=f"{name}{pathlib.Path(filename).suffix}", Body=data, ACL="public-read")
+        s3.Bucket('codepo').put_object(Key=f"{name}{pathlib.Path(filename).suffix}", Body=data, ACL="public-read")
         return f"{name}{pathlib.Path(filename).suffix}"
 
 
 def get_s3(name):
-    obj = s3.Object("githubclone", f"{name}")
+    obj = s3.Object("codepo", f"{name}")
     body = obj.get()['Body'].read()
     return body
 
