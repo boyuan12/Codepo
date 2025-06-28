@@ -43,7 +43,7 @@ def upload_s3(request, data=None, filename=False):
 
 
 def get_s3(name):
-    obj = s3.Object("codepo", f"{name}")
+    obj = s3.Object("codepo-xyz", f"{name}")
     body = obj.get()['Body'].read()
     return body
 
